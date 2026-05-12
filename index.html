@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Карта автомоек — команда</title>
+<script src="https://api-maps.yandex.ru/2.1/?apikey=f30a06ff-8f3e-45d8-8408-0d663acdbc1b&lang=ru_RU"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0eb;overflow:hidden;height:100vh}
+
+/* Login */
+#login-screen{position:fixed;inset:0;background:#f0f0eb;display:flex;align-items:center;justify-content:center;z-index:9999}
+.login-card{background:white;border-radius:16px;padding:32px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
+.login-card h2{font-size:18px;font-weight:600;margin-bottom:6px}
+.login-card p{font-size:13px;color:#888;margin-bottom:20px}
+.login-card input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px}
+.login-card button{width:100%;padding:10px;background:#2d8a4e;color:white;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer}
+.login-card button:hover{background:#236b3e}
+
+/* Toolbar */
+#toolbar{position:fixed;top:0;left:0;right:0;height:52px;background:white;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:6px;padding:0 12px;z-index:2000;overflow-x:auto}
+#toolbar h1{font-size:14px;font-weight:600;color:#222;white-space:nowrap;margin-right:4px}
+.sep{width:1px;height:28px;background:#e0e0e0;flex-shrink:0;margin:0 3px}
+.tool-btn{display:flex;align-items:center;gap:4px;font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:white;cursor:pointer;color:#333;white-space:nowrap;flex-shrink:0}
+.tool-btn:hover{background:#f5f5f0}
+.tool-btn.active{font-weight:500;border-color:currentColor}
+.tool-btn.t-green{color:#2d8a4e}.tool-btn.t-green.active{background:#EAF3DE;border-color:#2d8a4e}
+.tool-btn.t-yellow{color:#9a7200}.tool-btn.t-yellow.active{background:#FAEEDA;border-color:#c89b14}
+.tool-btn.t-add{color:#1D6A3A}.tool-btn.t-add.active{background:#d5f0e4;border-color:#1D9E75}
+.tool-btn.t-pointer{color:#555}.tool-btn.t-pointer.active{background:#f0f0f0;border-color:#888}
+#user-badge{margin-left:auto;font-size:12px;color:#888;white-space:nowrap;flex-shrink:0;padding:4px 10px;background:#f5f5f0;border-radius:6px}
+
+/* Map */
+#map{position:fixed;top:52px;left:0;right:360px;bottom:0}
+
+/* Panel */
+#panel{position:fixed;top:52px;right:0;width:360px;bottom:0;background:white;border-left:1px solid #e0e0e0;display:flex;flex-direction:column;z-index:1500}
+#panel-tabs{display:flex;border-bottom:1px solid #eee;flex-shrink:0}
+.ptab{flex:1;padding:9px 4px;font-size:12px;text-align:center;cursor:pointer;color:#888;border-bottom:2px solid transparent}
+.ptab.active{color:#222;border-bottom-color:#2d8a4e;font-weight:500}
+.tab-content{display:none;flex:1;overflow-y:auto;flex-direction:column}
+.tab-content.active{display:flex}
+
+/* Listings list */
+#listings-panel{flex:1;overflow-y:auto}
+.filter-bar{padding:8px;border-bottom:1px solid #eee;display:flex;gap:6px;flex-wrap:wrap}
+.filter-btn{font-size:11px;padding:3px 8px;border-radius:12px;border:1px solid #ddd;background:white;cursor:pointer;color:#555}
+.filter-btn.active{background:#222;color:white;border-color:#222}
+.listing-card{border-bottom:1px solid #f0f0f0;padding:10px 12px;cursor:pointer;transition:background 0.1s}
+.listing-card:hover{background:#f9f9f7}
+.listing-card.selected{background:#EAF3DE}
+.lc-top{display:flex;align-items:flex-start;gap:6px;margin-bottom:4px}
+.lc-score{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:600;flex-shrink:0;margin-top:1px}
+.score-top{background:#EAF3DE;color:#2d6e1e}
+.score-mid{background:#FAEEDA;color:#7a4800}
+.score-low{background:#f0f0f0;color:#666}
+.score-rej{background:#FCEBEB;color:#a32d2d}
+.lc-title{font-size:13px;font-weight:500;color:#222;flex:1;line-height:1.3}
+.lc-meta{font-size:11px;color:#888;margin-bottom:6px}
+.lc-reactions{display:flex;gap:4px;align-items:center}
+.react-btn{font-size:14px;padding:2px 5px;border:none;background:none;cursor:pointer;border-radius:4px;transition:background 0.1s}
+.react-btn:hover{background:#f0f0f0}
+.react-count{font-size:11px;color:#888;margin-right:4px}
+.status-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;margin-left:auto}
+.st-new{background:#f0f0f0;color:#666}
+.st-interested{background:#EAF3DE;color:#2d6e1e}
+.st-viewing{background:#EBF5FB;color:#1a5276}
+.st-rejected{background:#FCEBEB;color:#a32d2d}
+.st-selected{background:#d4f1d4;color:#1a5c1a}
+
+/* Detail panel */
+#detail-panel{position:fixed;top:52px;right:360px;width:340px;bottom:0;background:white;border-left:1px solid #e0e0e0;display:none;flex-direction:column;z-index:1600;box-shadow:-4px 0 16px rgba(0,0,0,0.08)}
+#detail-panel.open{display:flex}
+#detail-close{position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+#detail-content{flex:1;overflow-y:auto;padding:16px}
+#detail-title{font-size:15px;font-weight:600;margin-bottom:4px;padding-right:24px}
+#detail-meta{font-size:12px;color:#888;margin-bottom:12px;line-height:1.6}
+#detail-fields{font-size:12px;color:#444;line-height:2;margin-bottom:12px;background:#f9f9f7;border-radius:8px;padding:10px 12px}
+#detail-comment{font-size:13px;color:#555;margin-bottom:12px;line-height:1.5}
+#detail-url{display:block;font-size:12px;color:#1D9E75;margin-bottom:16px;word-break:break-all}
+.detail-section{font-size:11px;font-weight:600;color:#999;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+#detail-reactions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.big-react-btn{display:flex;align-items:center;gap:4px;font-size:13px;padding:6px 10px;border:1px solid #eee;border-radius:8px;background:white;cursor:pointer;transition:all 0.15s}
+.big-react-btn:hover{background:#f5f5f0;border-color:#ddd}
+.big-react-btn.my-reaction{background:#EAF3DE;border-color:#2d8a4e}
+.react-label{font-size:11px;color:#888}
+#detail-status-select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;margin-bottom:16px;cursor:pointer}
+#comments-list{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.comment-item{background:#f9f9f7;border-radius:8px;padding:8px 10px;font-size:12px}
+.comment-author{font-weight:600;color:#333;margin-bottom:2px}
+.comment-text{color:#555;line-height:1.4}
+.comment-time{font-size:10px;color:#bbb;margin-top:3px}
+#comment-input{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px;resize:none;height:64px;margin-bottom:6px}
+#comment-submit{width:100%;padding:7px;background:#2d8a4e;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer}
+#comment-submit:hover{background:#236b3e}
+
+/* Add listing modal */
+#add-modal{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:5000;display:none;align-items:center;justify-content:center}
+#add-modal.open{display:flex}
+.modal-card{background:white;border-radius:16px;padding:24px;width:480px;max-height:90vh;overflow-y:auto}
+.modal-card h3{font-size:16px;font-weight:600;margin-bottom:16px}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:12px;color:#666;margin-bottom:4px;font-weight:500}
+.form-row input,.form-row textarea,.form-row select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px}
+.form-row textarea{resize:none;height:72px}
+.form-row-2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.modal-actions{display:flex;gap:8px;margin-top:16px}
+.modal-actions button{flex:1;padding:9px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #ddd}
+#modal-cancel{background:white;color:#555}
+#modal-save{background:#2d8a4e;color:white;border-color:#2d8a4e}
+
+/* POI loading */
+#loading-bar{position:fixed;top:52px;left:0;right:360px;height:3px;background:#eee;z-index:3000}
+#loading-progress{height:3px;background:#2d8a4e;width:0;transition:width 0.3s}
+#loading-status{position:fixed;top:60px;left:calc(50% - 180px);background:rgba(255,255,255,0.97);border:1px solid #ddd;border-radius:8px;padding:7px 14px;font-size:12px;color:#555;z-index:3000;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+#status-bar{position:fixed;bottom:0;left:0;right:360px;background:rgba(255,255,255,0.95);border-top:1px solid #eee;padding:6px 14px;font-size:12px;color:#666;z-index:1500;display:none}
+#status-bar.visible{display:block}
+
+/* Layers tab */
+#layers-panel{padding:12px;overflow-y:auto}
+.layer-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
+.layer-toggle{width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s}
+.layer-toggle.on{background:#2d8a4e}.layer-toggle.off{background:#ddd}
+.layer-toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:8px;background:white;top:2px;transition:left 0.2s}
+.layer-toggle.on::after{left:18px}.layer-toggle.off::after{left:2px}
+.layer-dot{width:12px;height:12px;border-radius:3px;flex-shrink:0}
+.layer-name{font-size:13px;color:#333;flex:1}
+.layer-count{font-size:11px;color:#aaa}
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div id="login-screen">
+  <div class="login-card">
+    <h2>🗺 Карта автомоек</h2>
+    <p>Введи своё имя чтобы начать работу</p>
+    <input type="text" id="login-name" placeholder="Например: Марат" maxlength="32">
+    <button onclick="doLogin()">Войти</button>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div id="toolbar">
+  <h1>🗺 Карта автомоек</h1>
+  <div class="sep"></div>
+  <button class="tool-btn t-pointer active" id="tool-pointer" onclick="setTool('pointer')">✦ Выбор</button>
+  <div class="sep"></div>
+  <button class="tool-btn t-green" id="tool-zone-green" onclick="setTool('zone-green')">✏ Приор. зона</button>
+  <button class="tool-btn t-yellow" id="tool-zone-yellow" onclick="setTool('zone-yellow')">✏ Перспект. зона</button>
+  <div class="sep"></div>
+  <button class="tool-btn t-add" id="tool-add" onclick="openAddModal(null)">+ Объявление</button>
+  <div class="sep"></div>
+  <button class="tool-btn" onclick="reloadPOI()" style="color:#1a5276">↺ POI</button>
+  <div id="user-badge">—</div>
+</div>
+
+<div id="loading-bar"><div id="loading-progress"></div></div>
+<div id="loading-status"></div>
+<div id="map"></div>
+<div id="status-bar"></div>
+
+<!-- Detail panel -->
+<div id="detail-panel">
+  <button id="detail-close" onclick="closeDetail()">×</button>
+  <div id="detail-content">
+    <div id="detail-title"></div>
+    <div id="detail-meta"></div>
+    <div id="detail-fields"></div>
+    <div id="detail-comment"></div>
+    <a id="detail-url" target="_blank"></a>
+    <div class="detail-section">Статус объекта</div>
+    <select id="detail-status-select" onchange="updateStatus(this.value)">
+      <option value="new">🔘 Новый</option>
+      <option value="interested">✅ Интересно</option>
+      <option value="viewing">👁 Едем смотреть</option>
+      <option value="rejected">❌ Не подходит</option>
+      <option value="selected">🏆 Выбран</option>
+    </select>
+    <div class="detail-section">Реакции</div>
+    <div id="detail-reactions">
+      <button class="big-react-btn" onclick="toggleReaction('🔥')" id="react-fire"><span>🔥</span><span class="react-label" id="cnt-fire">0</span></button>
+      <button class="big-react-btn" onclick="toggleReaction('👍')" id="react-like"><span>👍</span><span class="react-label" id="cnt-like">0</span></button>
+      <button class="big-react-btn" onclick="toggleReaction('👎')" id="react-dislike"><span>👎</span><span class="react-label" id="cnt-dislike">0</span></button>
+      <button class="big-react-btn" onclick="toggleReaction('❓')" id="react-question"><span>❓</span><span class="react-label" id="cnt-question">0</span></button>
+    </div>
+    <div class="detail-section">Комментарии</div>
+    <div id="comments-list"></div>
+    <textarea id="comment-input" placeholder="Написать комментарий..."></textarea>
+    <button id="comment-submit" onclick="submitComment()">Отправить</button>
+  </div>
+</div>
+
+<!-- Main panel -->
+<div id="panel">
+  <div id="panel-tabs">
+    <div class="ptab active" onclick="switchTab('listings')">Объявления <span id="listings-count"></span></div>
+    <div class="ptab" onclick="switchTab('layers')">Слои</div>
+  </div>
+  <div class="tab-content active" id="tab-listings">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterBy('all',this)">Все</button>
+      <button class="filter-btn" onclick="filterBy('new',this)">Новые</button>
+      <button class="filter-btn" onclick="filterBy('interested',this)">Интересно</button>
+      <button class="filter-btn" onclick="filterBy('viewing',this)">Смотрим</button>
+      <button class="filter-btn" onclick="filterBy('rejected',this)" style="color:#a32d2d">Отклонены</button>
+      <button class="filter-btn" onclick="filterBy('selected',this)" style="color:#1a5c1a">Выбраны</button>
+    </div>
+    <div id="listings-panel"></div>
+  </div>
+  <div class="tab-content" id="tab-layers">
+    <div id="layers-panel">
+      <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">POI загружается из Яндекс.Карт автоматически.</div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-listings" onclick="toggleLayer('listings')"></button><div class="layer-dot" style="background:#1D9E75"></div><span class="layer-name">📍 Объявления</span><span class="layer-count" id="lcount-listings">—</span></div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-carwash" onclick="toggleLayer('carwash')"></button><div class="layer-dot" style="background:#e24b4a"></div><span class="layer-name">⛔ Автомойки</span><span class="layer-count" id="lcount-carwash">—</span></div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-gas" onclick="toggleLayer('gas')"></button><div class="layer-dot" style="background:#e67e22"></div><span class="layer-name">⛽ АЗС</span><span class="layer-count" id="lcount-gas">—</span></div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-sto" onclick="toggleLayer('sto')"></button><div class="layer-dot" style="background:#2980b9"></div><span class="layer-name">🔧 СТО</span><span class="layer-count" id="lcount-sto">—</span></div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-tire" onclick="toggleLayer('tire')"></button><div class="layer-dot" style="background:#8e44ad"></div><span class="layer-name">🔩 Шиномонтаж</span><span class="layer-count" id="lcount-tire">—</span></div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-mall" onclick="toggleLayer('mall')"></button><div class="layer-dot" style="background:#16a085"></div><span class="layer-name">🏬 ТЦ</span><span class="layer-count" id="lcount-mall">—</span></div>
+      <div class="layer-row"><button class="layer-toggle on" id="toggle-zones" onclick="toggleLayer('zones')"></button><div class="layer-dot" style="background:#2d8a4e"></div><span class="layer-name">📐 Зоны</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Add modal -->
+<div id="add-modal">
+  <div class="modal-card">
+    <h3>+ Добавить объявление</h3>
+    <div class="form-row"><label>Адрес *</label><input type="text" id="f-address" placeholder="Москва, ул. Пример, 1"></div>
+    <div class="form-row"><label>Заголовок *</label><input type="text" id="f-title" placeholder="Автомойка 4 поста, 500 м²"></div>
+    <div class="form-row"><label>Ссылка на объявление</label><input type="url" id="f-url" placeholder="https://avito.ru/..."></div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0"><label>Площадь (м²)</label><input type="number" id="f-area" placeholder="500"></div>
+      <div class="form-row" style="margin:0"><label>Постов</label><input type="number" id="f-posts" placeholder="4"></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0"><label>Аренда (₽/мес)</label><input type="number" id="f-rent" placeholder="500000"></div>
+      <div class="form-row" style="margin:0"><label>Срок аренды (лет)</label><input type="number" id="f-lease" placeholder="5"></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0"><label>Район</label><input type="text" id="f-district" placeholder="СВАО"></div>
+      <div class="form-row" style="margin:0"><label>Метро</label><input type="text" id="f-metro" placeholder="Бибирево"></div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0"><label>Источник</label>
+        <select id="f-source"><option value="avito">Авито</option><option value="cian">Циан</option><option value="manual">Вручную</option></select>
+      </div>
+      <div class="form-row" style="margin:0"><label>Оборудование</label>
+        <select id="f-equip"><option value="">Неизвестно</option><option value="true">Есть</option><option value="false">Нет</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Комментарий</label><textarea id="f-comment" placeholder="Важные детали об объекте..."></textarea></div>
+    <div id="f-coords-info" style="font-size:11px;color:#888;margin-bottom:8px">📍 Координаты будут определены по адресу автоматически</div>
+    <div class="modal-actions">
+      <button id="modal-cancel" onclick="closeAddModal()">Отмена</button>
+      <button id="modal-save" onclick="saveListing()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://gdhzqwvctqxjxygxnpzf.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkaHpxd3ZjdHF4anh5Z3hucHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzU0OTcsImV4cCI6MjA5NDE1MTQ5N30.uxKjRz0WbxntZyOSZN7Awmdtwh-JfVnw96SLfzJD4eo';
+const YANDEX_KEY = 'f30a06ff-8f3e-45d8-8408-0d663acdbc1b';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser = null;
+let myMap = null;
+let allListings = [];
+let listingMarkers = {};
+let currentFilter = 'all';
+let currentDetailId = null;
+let currentDetailReactions = [];
+let poiLayers = {carwash:[],gas:[],sto:[],tire:[],mall:[]};
+let zoneObjects = [];
+let layerVisible = {listings:true,carwash:true,gas:true,sto:true,tire:true,mall:true,zones:true};
+let currentTool = 'pointer';
+let drawingActive=false,drawingPoints=[],drawingPolyline=null,drawingType=null;
+let totalSearches=0,doneSearches=0,foundCoords={};
+let pendingCoords = null;
+
+// ---- LOGIN ----
+function doLogin() {
+  const name = document.getElementById('login-name').value.trim();
+  if (!name) return;
+  currentUser = name;
+  localStorage.setItem('carwash_user', name);
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('user-badge').textContent = '👤 ' + name;
+  initApp();
+}
+
+// Автологин
+window.addEventListener('load', function() {
+  const saved = localStorage.getItem('carwash_user');
+  if (saved) {
+    currentUser = saved;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('user-badge').textContent = '👤 ' + saved;
+  }
+  document.getElementById('login-name').addEventListener('keydown', function(e){ if(e.key==='Enter') doLogin(); });
+});
+
+// ---- INIT ----
+function initApp() {
+  ymaps.ready(function() {
+    myMap = new ymaps.Map('map', {center:[55.75,37.62],zoom:11,controls:['zoomControl','fullscreenControl','typeSelector','rulerControl']});
+    myMap.events.add('click', onMapClick);
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape'){ cancelDrawing(); closeDetail(); }});
+    loadListings();
+    loadAllPOI();
+    subscribeRealtime();
+  });
+}
+
+// ---- SUPABASE LISTINGS ----
+async function loadListings() {
+  const {data, error} = await sb.from('listings').select('*').order('score', {ascending:false});
+  if (error) { console.error(error); return; }
+  allListings = data || [];
+  renderListings();
+  renderMarkers();
+}
+
+function renderListings() {
+  const panel = document.getElementById('listings-panel');
+  const filtered = currentFilter === 'all' ? allListings : allListings.filter(l => l.status === currentFilter);
+  document.getElementById('listings-count').textContent = '(' + filtered.length + ')';
+
+  if (!filtered.length) {
+    panel.innerHTML = '<div style="padding:20px;font-size:13px;color:#aaa;text-align:center">Нет объявлений</div>';
+    return;
+  }
+
+  panel.innerHTML = filtered.map(l => {
+    const scoreClass = l.score>=7?'score-top':l.score>=3?'score-mid':l.score>=0?'score-low':'score-rej';
+    const stClass = 'st-'+l.status;
+    const stLabels = {new:'Новый',interested:'Интересно',viewing:'Смотрим',rejected:'Не подходит',selected:'Выбран'};
+    const rentStr = l.rent_month ? Math.round(l.rent_month/1000)+'к ₽/мес' : '';
+    const areaStr = l.area_m2 ? l.area_m2+'м²' : '';
+    return `<div class="listing-card${currentDetailId===l.id?' selected':''}" onclick="openDetail(${l.id})">
+      <div class="lc-top">
+        <span class="lc-score ${scoreClass}">${l.score>=7?'🟢':l.score>=3?'🟡':'🔘'} ${l.score}</span>
+        <div class="lc-title">${l.address}</div>
+        <span class="status-badge ${stClass}">${stLabels[l.status]||l.status}</span>
+      </div>
+      <div class="lc-meta">${[areaStr,rentStr,l.district,l.metro].filter(Boolean).join(' · ')}</div>
+      <div class="lc-reactions" id="reactions-${l.id}"></div>
+    </div>`;
+  }).join('');
+
+  filtered.forEach(l => loadReactionSummary(l.id));
+}
+
+async function loadReactionSummary(listingId) {
+  const {data} = await sb.from('reactions').select('reaction').eq('listing_id', listingId);
+  if (!data) return;
+  const el = document.getElementById('reactions-'+listingId);
+  if (!el) return;
+  const counts = {};
+  data.forEach(r => counts[r.reaction] = (counts[r.reaction]||0)+1);
+  el.innerHTML = Object.entries(counts).map(([r,c]) => `<span class="react-count">${r} ${c}</span>`).join('') ||
+    '<span style="font-size:11px;color:#ccc">нет реакций</span>';
+}
+
+function filterBy(status, btn) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderListings();
+}
+
+// ---- MARKERS ----
+function renderMarkers() {
+  Object.values(listingMarkers).forEach(m => myMap && myMap.geoObjects.remove(m));
+  listingMarkers = {};
+  allListings.forEach(l => {
+    if (!l.lat || !l.lon) return;
+    const color = l.status==='rejected'?'#ccc':l.score>=7?'#1D9E75':l.score>=3?'#c89b14':'#888';
+    const emoji = l.status==='rejected'?'✖':l.score>=7?'🟢':l.score>=3?'🟡':'🔘';
+    const rentStr = l.rent_month ? Math.round(l.rent_month/1000)+'к ₽/мес' : 'цена неизв.';
+    const pm = new ymaps.Placemark([l.lat,l.lon], {
+      hintContent: emoji+' '+l.address,
+      balloonContentHeader: emoji+' '+l.address,
+      balloonContentBody: `<div style="font-size:12px;line-height:1.7">
+        ${l.area_m2?l.area_m2+'м² · ':''} ${rentStr}<br>
+        ${l.has_equipment?'✅ с оборудованием':'🔧 без оборудования'}<br>
+        <a href="#" onclick="event.preventDefault();openDetail(${l.id})" style="color:#1D9E75">Открыть карточку →</a>
+      </div>`
+    }, {preset:'islands#circleIcon', iconColor: color});
+    pm.events.add('click', function(){ openDetail(l.id); });
+    if (layerVisible.listings) myMap.geoObjects.add(pm);
+    listingMarkers[l.id] = pm;
+  });
+  document.getElementById('lcount-listings').textContent = Object.keys(listingMarkers).length;
+}
+
+// ---- DETAIL ----
+async function openDetail(id) {
+  currentDetailId = id;
+  const l = allListings.find(x => x.id===id);
+  if (!l) return;
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('detail-title').textContent = l.address;
+
+  const meta = [l.district, l.metro, l.source].filter(Boolean).join(' · ');
+  document.getElementById('detail-meta').textContent = meta;
+
+  const fields = [
+    l.area_m2 ? '📐 Площадь: '+l.area_m2+' м²' : '',
+    l.posts ? '🚿 Постов: '+l.posts : '',
+    l.rent_month ? '💰 Аренда: '+l.rent_month.toLocaleString()+' ₽/мес' : '',
+    l.lease_years ? '📅 Срок: '+l.lease_years+' лет' : '',
+    l.has_equipment!==null ? (l.has_equipment?'✅ Оборудование есть':'🔧 Без оборудования') : '',
+    l.access_247!==null ? (l.access_247?'🕐 Доступ 24/7':'⚠️ Нет доступа 24/7') : '',
+    l.parking!==null ? (l.parking?'🅿️ Парковка есть':'⚠️ Нет парковки') : '',
+    l.utilities_included!==null ? (l.utilities_included?'💡 Коммуналка включена':'💡 Коммуналка отдельно') : '',
+  ].filter(Boolean).join('\n');
+  document.getElementById('detail-fields').textContent = fields || '—';
+  document.getElementById('detail-fields').style.whiteSpace = 'pre-line';
+
+  document.getElementById('detail-comment').textContent = l.comment || '';
+
+  const urlEl = document.getElementById('detail-url');
+  if (l.url) { urlEl.href=l.url; urlEl.textContent='Открыть объявление →'; urlEl.style.display='block'; }
+  else urlEl.style.display='none';
+
+  document.getElementById('detail-status-select').value = l.status || 'new';
+
+  // Фокус на карте
+  if (l.lat && l.lon && myMap) myMap.setCenter([l.lat,l.lon], 14);
+
+  // Подсветка в списке
+  document.querySelectorAll('.listing-card').forEach(c => c.classList.remove('selected'));
+  renderListings();
+
+  await loadDetailReactions(id);
+  await loadComments(id);
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  currentDetailId = null;
+}
+
+async function updateStatus(status) {
+  if (!currentDetailId) return;
+  await sb.from('listings').update({status}).eq('id', currentDetailId);
+  const l = allListings.find(x => x.id===currentDetailId);
+  if (l) l.status = status;
+  renderListings();
+  renderMarkers();
+}
+
+// ---- REACTIONS ----
+async function loadDetailReactions(listingId) {
+  const {data} = await sb.from('reactions').select('*').eq('listing_id', listingId);
+  currentDetailReactions = data || [];
+  renderDetailReactions();
+}
+
+function renderDetailReactions() {
+  const emojis = ['🔥','👍','👎','❓'];
+  const ids = {fire:'🔥',like:'👍',dislike:'👎',question:'❓'};
+  Object.entries(ids).forEach(([key,emoji]) => {
+    const count = currentDetailReactions.filter(r=>r.reaction===emoji).length;
+    document.getElementById('cnt-'+key).textContent = count;
+    const myReact = currentDetailReactions.find(r=>r.reaction===emoji&&r.user_name===currentUser);
+    document.getElementById('react-'+key).classList.toggle('my-reaction', !!myReact);
+  });
+}
+
+async function toggleReaction(emoji) {
+  if (!currentDetailId || !currentUser) return;
+  const existing = currentDetailReactions.find(r=>r.reaction===emoji&&r.user_name===currentUser);
+  if (existing) {
+    await sb.from('reactions').delete().eq('id', existing.id);
+    currentDetailReactions = currentDetailReactions.filter(r=>r.id!==existing.id);
+  } else {
+    const {data} = await sb.from('reactions').insert({listing_id:currentDetailId,user_name:currentUser,reaction:emoji}).select().single();
+    if (data) currentDetailReactions.push(data);
+  }
+  renderDetailReactions();
+  loadReactionSummary(currentDetailId);
+}
+
+// ---- COMMENTS ----
+async function loadComments(listingId) {
+  const {data} = await sb.from('comments').select('*').eq('listing_id', listingId).order('created_at');
+  const list = document.getElementById('comments-list');
+  if (!data || !data.length) { list.innerHTML='<div style="font-size:12px;color:#bbb;padding:4px 0">Комментариев пока нет</div>'; return; }
+  list.innerHTML = data.map(c => {
+    const time = new Date(c.created_at).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    return `<div class="comment-item">
+      <div class="comment-author">${c.user_name}</div>
+      <div class="comment-text">${c.text}</div>
+      <div class="comment-time">${time}</div>
+    </div>`;
+  }).join('');
+}
+
+async function submitComment() {
+  const text = document.getElementById('comment-input').value.trim();
+  if (!text || !currentDetailId || !currentUser) return;
+  await sb.from('comments').insert({listing_id:currentDetailId,user_name:currentUser,text});
+  document.getElementById('comment-input').value = '';
+  await loadComments(currentDetailId);
+}
+
+// ---- ADD LISTING ----
+function openAddModal(coords) {
+  pendingCoords = coords;
+  document.getElementById('add-modal').classList.add('open');
+  if (coords) document.getElementById('f-coords-info').textContent = '📍 Координаты: '+coords[0].toFixed(5)+', '+coords[1].toFixed(5);
+  else document.getElementById('f-coords-info').textContent = '📍 Координаты определятся по адресу';
+}
+
+function closeAddModal() {
+  document.getElementById('add-modal').classList.remove('open');
+  ['f-address','f-title','f-url','f-area','f-posts','f-rent','f-lease','f-district','f-metro','f-comment'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  pendingCoords = null;
+}
+
+async function saveListing() {
+  const address = document.getElementById('f-address').value.trim();
+  const title = document.getElementById('f-title').value.trim();
+  if (!address || !title) { alert('Заполни адрес и заголовок'); return; }
+
+  let lat = null, lon = null;
+  if (pendingCoords) { lat=pendingCoords[0]; lon=pendingCoords[1]; }
+  else {
+    try {
+      const geo = await ymaps.geocode('Москва, '+address, {results:1});
+      const obj = geo.geoObjects.get(0);
+      if (obj) { const c=obj.geometry.getCoordinates(); lat=c[0]; lon=c[1]; }
+    } catch(e) {}
+  }
+
+  const equip = document.getElementById('f-equip').value;
+  const data = {
+    source: document.getElementById('f-source').value,
+    url: document.getElementById('f-url').value||null,
+    title, address, lat, lon,
+    district: document.getElementById('f-district').value||null,
+    metro: document.getElementById('f-metro').value||null,
+    area_m2: parseInt(document.getElementById('f-area').value)||null,
+    posts: parseInt(document.getElementById('f-posts').value)||null,
+    rent_month: parseInt(document.getElementById('f-rent').value)||null,
+    lease_years: parseInt(document.getElementById('f-lease').value)||null,
+    has_equipment: equip===''?null:equip==='true',
+    comment: document.getElementById('f-comment').value||null,
+    score: 0, status: 'new'
+  };
+
+  const {data:saved, error} = await sb.from('listings').insert(data).select().single();
+  if (error) { alert('Ошибка: '+error.message); return; }
+  allListings.unshift(saved);
+  renderListings();
+  renderMarkers();
+  closeAddModal();
+  if (saved.id) openDetail(saved.id);
+}
+
+// ---- REALTIME ----
+function subscribeRealtime() {
+  sb.channel('listings-changes')
+    .on('postgres_changes', {event:'*',schema:'public',table:'listings'}, () => loadListings())
+    .on('postgres_changes', {event:'*',schema:'public',table:'comments'}, (payload) => {
+      if (currentDetailId && payload.new && payload.new.listing_id===currentDetailId) loadComments(currentDetailId);
+    })
+    .subscribe();
+}
+
+// ---- MAP TOOLS ----
+function setTool(tool) {
+  cancelDrawing();
+  currentTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tool-'+tool).classList.add('active');
+  const hints = {'pointer':'','zone-green':'Кликайте по точкам контура. Двойной клик — завершить.','zone-yellow':'Кликайте по точкам контура. Двойной клик — завершить.','add':'Кликните на карту чтобы добавить объявление с координатами.'};
+  if(hints[tool])showStatus(hints[tool]);else hideStatus();
+  myMap.getContainer().style.cursor = tool==='pointer'?'':'crosshair';
+}
+
+function onMapClick(e) {
+  if(currentTool==='pointer')return;
+  const coords=e.get('coords');
+  if(currentTool==='zone-green'||currentTool==='zone-yellow')handlePolygonClick(coords);
+  else if(currentTool==='add')openAddModal(coords);
+}
+
+function handlePolygonClick(coords) {
+  if(!drawingActive){
+    drawingActive=true;drawingType=currentTool;drawingPoints=[coords];
+    const color=currentTool==='zone-green'?'#2d8a4e':'#d4a017';
+    drawingPolyline=new ymaps.Polyline([coords,coords],{},{strokeColor:color,strokeWidth:2,strokeStyle:'dash'});
+    myMap.geoObjects.add(drawingPolyline);
+    myMap.events.add('mousemove',onMouseMove);myMap.events.add('dblclick',onDblClick);
+    showStatus('Точек: 1. Двойной клик — завершить.');
+  } else {
+    drawingPoints.push(coords);
+    drawingPolyline.geometry.set(drawingPoints.concat([drawingPoints[0]]));
+    showStatus('Точек: '+drawingPoints.length+'. Двойной клик — завершить.');
+  }
+}
+
+function onMouseMove(e){if(!drawingActive)return;drawingPolyline.geometry.set(drawingPoints.concat([e.get('coords'),drawingPoints[0]]));}
+function onDblClick(e){e.preventDefault();if(drawingPoints.length<3)return;finishPolygon();}
+
+function finishPolygon(){
+  myMap.events.remove('mousemove',onMouseMove);myMap.events.remove('dblclick',onDblClick);
+  if(drawingPolyline){myMap.geoObjects.remove(drawingPolyline);drawingPolyline=null;}
+  const color=drawingType==='zone-green'?'#2d8a4e':'#d4a017';
+  const name=prompt('Название зоны:')||(drawingType==='zone-green'?'Приоритетная зона':'Перспективная зона');
+  const poly=new ymaps.Polygon([drawingPoints],{hintContent:name,balloonContentHeader:name},{fillColor:color,fillOpacity:0.2,strokeColor:color,strokeWidth:2});
+  if(layerVisible.zones)myMap.geoObjects.add(poly);
+  zoneObjects.push(poly);
+  drawingActive=false;drawingPoints=[];drawingType=null;
+  setTool('pointer');
+}
+
+function cancelDrawing(){
+  if(!drawingActive)return;
+  myMap.events.remove('mousemove',onMouseMove);myMap.events.remove('dblclick',onDblClick);
+  if(drawingPolyline){myMap.geoObjects.remove(drawingPolyline);drawingPolyline=null;}
+  drawingActive=false;drawingPoints=[];drawingType=null;
+}
+
+// ---- POI ----
+const LAYER_CFG={carwash:{color:'#e24b4a',preset:'islands#redCircleIcon',label:'Автомойка'},gas:{color:'#e67e22',preset:'islands#orangeCircleIcon',label:'АЗС'},sto:{color:'#2980b9',preset:'islands#blueCircleIcon',label:'СТО'},tire:{color:'#8e44ad',preset:'islands#violetCircleIcon',label:'Шиномонтаж'},mall:{color:'#16a085',preset:'islands#darkGreenCircleIcon',label:'ТЦ'}};
+const SEARCH_QUERIES={carwash:['автомойка самообслуживания Москва','мойка самообслуживания Москва'],gas:['АЗС Москва','заправка Лукойл Москва','заправка Газпром Москва'],sto:['автосервис Москва'],tire:['шиномонтаж Москва'],mall:['торговый центр Москва']};
+const SECTORS=[[55.75,37.37],[55.75,37.62],[55.75,37.87],[55.87,37.37],[55.87,37.62],[55.87,37.87],[55.63,37.37],[55.63,37.62],[55.63,37.87],[55.70,37.50],[55.70,37.75],[55.80,37.50],[55.80,37.75]];
+
+function loadAllPOI(){
+  showLoadingStatus('Загружаем POI...');setProgress(0);
+  const all=[];
+  Object.keys(SEARCH_QUERIES).forEach(cat=>{
+    SEARCH_QUERIES[cat].forEach(q=>{
+      if(cat==='carwash')SECTORS.forEach(c=>all.push({cat,q,center:c}));
+      else all.push({cat,q,center:null});
+    });
+  });
+  totalSearches=all.length;doneSearches=0;foundCoords={};
+  all.forEach((s,i)=>setTimeout(()=>runSearch(s.cat,s.q,s.center),i*300));
+}
+
+function runSearch(cat,query,center){
+  const opts={results:50,boundedBy:center?[[center[0]-0.12,center[1]-0.18],[center[0]+0.12,center[1]+0.18]]:[[55.49,37.20],[55.97,38.00]]};
+  ymaps.search(query,opts).then(res=>{
+    res.geoObjects.each(obj=>{
+      const coords=obj.geometry.getCoordinates();
+      const key=coords[0].toFixed(4)+','+coords[1].toFixed(4)+':'+cat;
+      if(foundCoords[key])return;foundCoords[key]=true;
+      const name=obj.properties.get('name')||LAYER_CFG[cat].label;
+      const pm=new ymaps.Placemark(coords,{hintContent:name},{preset:LAYER_CFG[cat].preset,iconColor:LAYER_CFG[cat].color});
+      if(layerVisible[cat])myMap.geoObjects.add(pm);
+      poiLayers[cat].push(pm);
+      document.getElementById('lcount-'+cat).textContent=poiLayers[cat].length;
+    });
+    doneSearches++;
+    const pct=Math.round(doneSearches/totalSearches*100);setProgress(pct);
+    showLoadingStatus('POI: '+pct+'% · автомойки: '+poiLayers.carwash.length+' · АЗС: '+poiLayers.gas.length);
+    if(doneSearches>=totalSearches)setTimeout(()=>{hideLoadingStatus();showStatus('POI загружен.');setTimeout(hideStatus,4000);},500);
+  },()=>{doneSearches++;if(doneSearches>=totalSearches)hideLoadingStatus();});
+}
+
+function reloadPOI(){
+  Object.keys(poiLayers).forEach(cat=>{
+    poiLayers[cat].forEach(pm=>myMap.geoObjects.remove(pm));
+    poiLayers[cat]=[];
+    document.getElementById('lcount-'+cat).textContent='—';
+  });
+  loadAllPOI();
+}
+
+function toggleLayer(cat){
+  layerVisible[cat]=!layerVisible[cat];
+  const btn=document.getElementById('toggle-'+cat);
+  btn.classList.toggle('on',layerVisible[cat]);
+  btn.classList.toggle('off',!layerVisible[cat]);
+  if(cat==='listings'){Object.values(listingMarkers).forEach(m=>{if(layerVisible[cat])myMap.geoObjects.add(m);else myMap.geoObjects.remove(m);});return;}
+  if(cat==='zones'){zoneObjects.forEach(z=>{if(layerVisible[cat])myMap.geoObjects.add(z);else myMap.geoObjects.remove(z);});return;}
+  poiLayers[cat].forEach(pm=>{if(layerVisible[cat])myMap.geoObjects.add(pm);else myMap.geoObjects.remove(pm);});
+}
+
+// ---- UI ----
+function switchTab(tab){
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['listings','layers'][i]===tab));
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+}
+function showStatus(msg){const el=document.getElementById('status-bar');el.textContent=msg;el.classList.add('visible');}
+function hideStatus(){document.getElementById('status-bar').classList.remove('visible');}
+function showLoadingStatus(msg){const el=document.getElementById('loading-status');el.textContent=msg;el.style.display='block';}
+function hideLoadingStatus(){document.getElementById('loading-status').style.display='none';document.getElementById('loading-bar').style.display='none';}
+function setProgress(pct){document.getElementById('loading-progress').style.width=pct+'%';}
+
+// Автологин при старте если имя уже есть
+if(localStorage.getItem('carwash_user')){
+  currentUser=localStorage.getItem('carwash_user');
+  ymaps.ready(function(){
+    myMap=new ymaps.Map('map',{center:[55.75,37.62],zoom:11,controls:['zoomControl','fullscreenControl','typeSelector','rulerControl']});
+    myMap.events.add('click',onMapClick);
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'){cancelDrawing();closeDetail();}});
+    loadListings();loadAllPOI();subscribeRealtime();
+  });
+}
+</script>
+</body>
+</html>
