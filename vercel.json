@@ -1,15 +1,7 @@
 {
   "functions": {
-    "api/parse.js": {
-      "maxDuration": 30
-    }
-  },
-  "headers": [
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        { "key": "Content-Type", "value": "application/json; charset=utf-8" }
-      ]
-    }
-  ]
+    "api/bot.js": { "maxDuration": 30 },
+    "api/parse.js": { "maxDuration": 30 },
+    "api/setup-webhook.js": { "maxDuration": 10 }
+  }
 }
