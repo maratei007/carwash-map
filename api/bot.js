@@ -3,76 +3,65 @@ const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
 const MAP_URL = process.env.MAP_URL || 'https://carwash-map.vercel.app';
-const VERSION = 'v2.4';
+const VERSION = 'v2.5';
 const TELEGRAM_API = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN;
 
 async function sendMessage(chatId, text) {
-  const body = Buffer.from(JSON.stringify({ chat_id: chatId, text: text, parse_mode: 'HTML' }), 'utf-8');
-  await fetch(TELEGRAM_API + '/sendMessage', {
+  const payload = { chat_id: chatId, text: text, parse_mode: 'HTML' };
+  const resp = await fetch(TELEGRAM_API + '/sendMessage', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: body,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
   });
+  const ab = await resp.arrayBuffer();
+  return JSON.parse(new TextDecoder('utf-8').decode(ab));
 }
 
 async function fetchPageText(url) {
   try {
     const resp = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html',
-        'Accept-Language': 'ru-RU,ru;q=0.9',
-      },
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'ru-RU,ru;q=0.9' },
     });
-    const arrayBuffer = await resp.arrayBuffer();
-    const html = new TextDecoder('utf-8').decode(arrayBuffer);
+    const ab = await resp.arrayBuffer();
+    const html = new TextDecoder('utf-8').decode(ab);
     return html
       .replace(/<script[\s\S]*?<\/script>/gi, '')
       .replace(/<style[\s\S]*?<\/style>/gi, '')
       .replace(/<[^>]+>/g, ' ')
-      .replace(/&nbsp;/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()
       .slice(0, 8000);
   } catch(e) {
-    console.error('fetchPageText error:', e.message);
     return null;
   }
 }
 
 async function parseWithClaude(content, url) {
-  const userContent = [
-    'Analyze this Russian real estate listing for self-service car wash rental in Moscow.',
-    'Return ONLY valid JSON, no markdown:',
-    '{"title":"short name","address":"full address","district":null,"metro":null,"area_m2":null,"posts":null,"rent_month":null,"lease_years":null,"has_equipment":null,"access_247":null,"parking":null,"utilities_included":null,"source":"avito","url":"' + (url || '') + '","comment":"1-2 sentences","red_flags":[],"score":0}',
-    'red_flags: lease_under_5_years, area_under_200, posts_under_3, no_parking, no_access_247, needs_renovation, industrial_zone',
-    'score: 9-10 ready carwash 4+posts, 7-8 good 500m2+, 5-6 ok, 3-4 check, 0-2 weak',
-    'LISTING:',
-    content.slice(0, 5000),
-  ].join('\n');
-
-  const payload = {
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 1000,
-    messages: [{ role: 'user', content: userContent }],
-  };
-  const body = Buffer.from(JSON.stringify(payload), 'utf-8');
+  const userContent = 'Analyze this Russian real estate listing for self-service car wash in Moscow.\n' +
+    'Return ONLY valid JSON:\n' +
+    '{"title":"name","address":"address","district":null,"metro":null,"area_m2":null,"posts":null,"rent_month":null,"lease_years":null,"has_equipment":null,"access_247":null,"parking":null,"utilities_included":null,"source":"avito","url":"' + (url||'') + '","comment":"summary","red_flags":[],"score":5}\n' +
+    'score 9-10=ready carwash, 7-8=good space, 5-6=ok, 3-4=check, 0-2=weak\n' +
+    'red_flags: lease_under_5_years area_under_200 posts_under_3 no_parking industrial_zone needs_renovation\n' +
+    'LISTING:\n' + content.slice(0, 5000);
 
   const resp = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json; charset=utf-8',
+      'Content-Type': 'application/json',
       'x-api-key': ANTHROPIC_KEY,
       'anthropic-version': '2023-06-01',
     },
-    body: body,
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1000,
+      messages: [{ role: 'user', content: userContent }],
+    }),
   });
-
   const ab = await resp.arrayBuffer();
   const data = JSON.parse(new TextDecoder('utf-8').decode(ab));
-  if (!resp.ok) throw new Error(data.error && data.error.message ? data.error.message : 'Claude API error');
+  if (!resp.ok) throw new Error(data.error ? data.error.message : 'Claude error');
   const match = data.content[0].text.match(/\{[\s\S]*\}/);
-  if (!match) throw new Error('No JSON in Claude response');
+  if (!match) throw new Error('No JSON from Claude');
   return JSON.parse(match[0]);
 }
 
@@ -82,13 +71,10 @@ async function geocode(address) {
     const resp = await fetch('https://geocode-maps.yandex.ru/1.x/?apikey=f30a06ff-8f3e-45d8-8408-0d663acdbc1b&geocode=' + q + '&format=json&results=1');
     const ab = await resp.arrayBuffer();
     const data = JSON.parse(new TextDecoder('utf-8').decode(ab));
-    const members = data && data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
-    if (members && members.length > 0) {
-      const pos = members[0].GeoObject && members[0].GeoObject.Point && members[0].GeoObject.Point.pos;
-      if (pos) {
-        const parts = pos.split(' ');
-        return { lat: parseFloat(parts[1]), lon: parseFloat(parts[0]) };
-      }
+    const m = data && data.response && data.response.GeoObjectCollection && data.response.GeoObjectCollection.featureMember;
+    if (m && m[0] && m[0].GeoObject && m[0].GeoObject.Point) {
+      const parts = m[0].GeoObject.Point.pos.split(' ');
+      return { lat: parseFloat(parts[1]), lon: parseFloat(parts[0]) };
     }
   } catch(e) {}
   return { lat: null, lon: null };
@@ -98,8 +84,7 @@ async function saveListing(parsed, addedBy) {
   const coords = parsed.address ? await geocode(parsed.address) : { lat: null, lon: null };
   const listing = {
     source: 'bot', url: parsed.url || null,
-    title: parsed.title || parsed.address || 'Listing',
-    address: parsed.address || '',
+    title: parsed.title || 'Listing', address: parsed.address || '',
     lat: coords.lat, lon: coords.lon,
     district: parsed.district || null, metro: parsed.metro || null,
     area_m2: parsed.area_m2 || null, posts: parsed.posts || null,
@@ -108,71 +93,53 @@ async function saveListing(parsed, addedBy) {
     access_247: parsed.access_247 !== undefined ? parsed.access_247 : null,
     parking: parsed.parking !== undefined ? parsed.parking : null,
     utilities_included: parsed.utilities_included !== undefined ? parsed.utilities_included : null,
-    comment: parsed.comment || null,
-    red_flags: parsed.red_flags || [],
+    comment: parsed.comment || null, red_flags: parsed.red_flags || [],
     score: parsed.score || 0, status: 'new',
   };
-
-  const body = Buffer.from(JSON.stringify(listing), 'utf-8');
   const resp = await fetch(SUPABASE_URL + '/rest/v1/listings', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json; charset=utf-8',
-      'apikey': SUPABASE_KEY,
-      'Authorization': 'Bearer ' + SUPABASE_KEY,
-      'Prefer': 'return=representation',
-    },
-    body: body,
+    headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Prefer': 'return=representation' },
+    body: JSON.stringify(listing),
   });
-
   const ab = await resp.arrayBuffer();
   const data = JSON.parse(new TextDecoder('utf-8').decode(ab));
   if (!resp.ok) throw new Error('Supabase: ' + JSON.stringify(data));
   const saved = Array.isArray(data) ? data[0] : data;
-
   try {
-    const actBody = Buffer.from(JSON.stringify({
-      type: 'bot',
-      user_name: addedBy,
-      description: 'added via Telegram: ' + (parsed.address || 'listing'),
-      listing_id: saved && saved.id ? saved.id : null,
-    }), 'utf-8');
     await fetch(SUPABASE_URL + '/rest/v1/activity', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json; charset=utf-8', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
-      body: actBody,
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY },
+      body: JSON.stringify({ type: 'bot', user_name: addedBy, description: 'added via Telegram: ' + (parsed.address || 'listing'), listing_id: saved && saved.id ? saved.id : null }),
     });
   } catch(e) {}
-
   return saved;
 }
 
+function scoreEmoji(score) { return score >= 7 ? '[TOP]' : score >= 3 ? '[OK]' : '[WEAK]'; }
+
 function buildResult(parsed) {
-  const e = parsed.score >= 7 ? '\uD83D\uDFE2' : parsed.score >= 3 ? '\uD83D\uDFE1' : '\u26AA';
   const rent = parsed.rent_month ? Math.round(parsed.rent_month / 1000) + 'k RUB/mo' : '';
   const area = parsed.area_m2 ? parsed.area_m2 + 'm2' : '';
   const posts = parsed.posts ? parsed.posts + ' posts' : '';
   const parts = [area, posts, rent].filter(Boolean).join(' / ');
-  return e + ' <b>Score: ' + parsed.score + '/10</b> \u2014 added to map!\n\n' +
-    '\uD83D\uDCCD <b>' + (parsed.address || '?') + '</b>\n' +
-    (parsed.metro ? '\uD83D\uDE87 ' + parsed.metro + '\n' : '') +
+  const flags = parsed.red_flags && parsed.red_flags.length ? '\nFlags: ' + parsed.red_flags.join(', ') : '';
+  return scoreEmoji(parsed.score) + ' Score: ' + parsed.score + '/10 - added to map!\n\n' +
+    'Address: ' + (parsed.address || '?') + '\n' +
+    (parsed.metro ? 'Metro: ' + parsed.metro + '\n' : '') +
     (parts ? parts + '\n' : '') +
-    (parsed.comment ? '\n' + parsed.comment + '\n' : '') +
-    '\n\uD83D\DDFB <a href="' + MAP_URL + '">Open map</a>' +
-    (parsed.url ? '  \uD83D\uDD17 <a href="' + parsed.url + '">Listing</a>' : '');
+    (parsed.comment ? '\n' + parsed.comment : '') +
+    flags + '\n\n' +
+    'Map: ' + MAP_URL + '\n' +
+    (parsed.url ? 'Listing: ' + parsed.url : '');
 }
 
-const HELP = '\uD83D\uDCCB <b>How to add a listing:</b>\n\n' +
-  '<b>Method 1 \u2014 send a link</b>\n' +
-  'Find listing on Avito/Cian, copy URL, send to me.\n\n' +
-  '<b>Method 2 \u2014 send page text (more reliable)</b>\n' +
-  'Open listing \u2192 Cmd+A \u2192 Cmd+C \u2192 paste here.\n\n' +
-  '\uD83D\DDFB <a href="' + MAP_URL + '">Open map</a>';
+const HELP_TEXT = 'How to add a listing [' + VERSION + ']:\n\n' +
+  'Method 1 - send a URL:\nFind listing on Avito/Cian, copy URL, send to me.\n\n' +
+  'Method 2 - send page text (more reliable):\nOpen listing, select all (Cmd+A), copy (Cmd+C), paste here.\n\n' +
+  'Map: ' + MAP_URL;
 
 module.exports = async function handler(req, res) {
-  if (req.method === 'GET') {
-    return res.status(200).json({ ok: true, status: 'bot is running', version: VERSION });
-  }
+  if (req.method === 'GET') return res.status(200).json({ ok: true, version: VERSION });
   if (req.method !== 'POST') return res.status(405).end();
 
   try {
@@ -184,25 +151,24 @@ module.exports = async function handler(req, res) {
     const name = [(msg.from && msg.from.first_name) || '', (msg.from && msg.from.last_name) || ''].filter(Boolean).join(' ') || 'User';
 
     if (text === '/start') {
-      await sendMessage(chatId, 'Hello ' + name + '! [' + VERSION + ']\n\n' + HELP);
+      await sendMessage(chatId, 'Hello ' + name + '!\n\n' + HELP_TEXT);
       return res.status(200).end();
     }
-
     if (text === '/help') {
-      await sendMessage(chatId, HELP + '\n\nVersion: ' + VERSION);
+      await sendMessage(chatId, HELP_TEXT);
       return res.status(200).end();
     }
 
     const urlMatch = text.match(/https?:\/\/[^\s]+/);
     if (urlMatch) {
       const url = urlMatch[0];
-      await sendMessage(chatId, '\u23F3 Reading listing...');
+      await sendMessage(chatId, 'Reading listing...');
       const pageText = await fetchPageText(url);
       if (!pageText || pageText.length < 200) {
-        await sendMessage(chatId, '\u26A0\uFE0F Could not read page (blocked).\n\nTry Method 2:\nOpen in browser \u2192 Cmd+A \u2192 Cmd+C \u2192 paste here.');
+        await sendMessage(chatId, 'Could not read page (blocked by site).\n\nTry Method 2: open in browser, select all (Cmd+A), copy, paste here.');
         return res.status(200).end();
       }
-      await sendMessage(chatId, '\uD83E\uDD16 Analyzing with Claude AI...');
+      await sendMessage(chatId, 'Analyzing with Claude AI...');
       const parsed = await parseWithClaude(pageText, url);
       await saveListing(parsed, name);
       await sendMessage(chatId, buildResult(parsed));
@@ -210,7 +176,7 @@ module.exports = async function handler(req, res) {
     }
 
     if (text.length > 200) {
-      await sendMessage(chatId, '\uD83E\uDD16 Analyzing with Claude AI...');
+      await sendMessage(chatId, 'Analyzing with Claude AI...');
       const urlInText = text.match(/https?:\/\/(?:www\.)?(?:avito|cian)\.ru\/[^\s]*/);
       const parsed = await parseWithClaude(text, urlInText ? urlInText[0] : '');
       await saveListing(parsed, name);
@@ -218,12 +184,14 @@ module.exports = async function handler(req, res) {
       return res.status(200).end();
     }
 
-    await sendMessage(chatId, 'Send a listing URL or paste the page text.\n\n/help for instructions');
+    await sendMessage(chatId, 'Send a listing URL or paste the page text.\n\n/help for instructions [' + VERSION + ']');
 
   } catch(e) {
     console.error('Bot error:', e.message);
     const chatId = req.body && req.body.message && req.body.message.chat && req.body.message.chat.id;
-    if (chatId) await sendMessage(chatId, '\u274C Error: ' + e.message);
+    if (chatId) {
+      try { await sendMessage(chatId, 'Error: ' + e.message); } catch(e2) {}
+    }
   }
   return res.status(200).end();
 };
