@@ -409,7 +409,7 @@ Score: 9-10 готовая мойка 4+ поста в жилом районе, 
     const resp=await fetch('/api/parse',{
       method:'POST',
       headers:{'Content-Type':'application/json; charset=utf-8'},
-      body:JSON.stringify({content: btoa(unescape(encodeURIComponent(content.slice(0,6000))))})
+      body:JSON.stringify({content: content.slice(0,6000)})
     });
     const parsed=await resp.json();
     if(!resp.ok){throw new Error(parsed.error||'API error');}
