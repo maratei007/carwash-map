@@ -362,7 +362,7 @@ function renderListings(){
     const rentStr=l.rent_month?Math.round(l.rent_month/1000)+'к ₽/мес':'';
     const areaStr=l.area_m2?l.area_m2+'м²':'';
     const srcIcon=l.source==='bot'?'🤖 ':l.source==='avito'?'🅰 ':l.source==='cian'?'🅲 ':'';
-    return`<div class="listing-card${currentDetailId===l.id?' selected':''}" onclick="openDetail(${l.id})">
+    return`<div id="card-${l.id}" class="listing-card${currentDetailId===l.id?' selected':''}" onclick="openDetail(${l.id})">
       <div class="lc-top">
         <span class="lc-score ${sc}">${l.score>=7?'🟢':l.score>=3?'🟡':'🔘'} ${l.score}</span>
         <div class="lc-title">${srcIcon}${l.address}</div>
@@ -391,26 +391,47 @@ function filterBy(status,btn){
 }
 
 // ---- MARKERS — кастомные иконки для объявлений ----
+function statusColor(l) {
+  if (l.status === 'rejected')   return { fill: '#e24b4a', border: '#b83333' };
+  if (l.status === 'viewing')    return { fill: '#2d8a4e', border: '#1a6035' };
+  if (l.status === 'selected')   return { fill: '#1a6035', border: '#0e3d20' };
+  if (l.status === 'interested') return { fill: '#d4a017', border: '#a87800' };
+  return { fill: '#888888', border: '#555555' };
+}
+
 function getListingIcon(l) {
-  // Цвет по скорингу
-  const color = l.status==='rejected'?'#aaa':l.score>=7?'#1D9E75':l.score>=3?'#d4a017':'#777';
-  const border = l.status==='rejected'?'#888':l.score>=7?'#157a55':l.score>=3?'#a87800':'#555';
-  // Источник
-  const src = l.source==='bot'?'🤖':l.source==='avito'?'А':l.source==='cian'?'Ц':'📍';
-  // Score badge
-  const score = l.score;
-
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="52" viewBox="0 0 44 52">
-    <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/></filter>
-    <path d="M22 2 C12 2 4 10 4 20 C4 33 22 50 22 50 C22 50 40 33 40 20 C40 10 32 2 22 2Z" fill="${color}" filter="url(#sh)" stroke="${border}" stroke-width="1.5"/>
-    <circle cx="22" cy="20" r="13" fill="white" opacity="0.95"/>
-    <text x="22" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="${color}" font-family="-apple-system,sans-serif">${src}</text>
-    <text x="22" y="28" text-anchor="middle" font-size="10" font-weight="600" fill="${border}" font-family="-apple-system,sans-serif">${score}</text>
-  </svg>`;
-
+  var c = statusColor(l);
+  var src = l.source==='bot'?'T':l.source==='avito'?'A':l.source==='cian'?'C':'?';
+  var score = l.score;
+  var fid = 'sh' + l.id;
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="52" viewBox="0 0 44 52">' +
+    '<filter id="' + fid + '"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/></filter>' +
+    '<path d="M22 2 C12 2 4 10 4 20 C4 33 22 50 22 50 C22 50 40 33 40 20 C40 10 32 2 22 2Z" fill="' + c.fill + '" filter="url(#' + fid + ')" stroke="' + c.border + '" stroke-width="1.5"/>' +
+    '<circle cx="22" cy="20" r="13" fill="white" opacity="0.95"/>' +
+    '<text x="22" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="' + c.fill + '" font-family="Arial,sans-serif">' + src + '</text>' +
+    '<text x="22" y="28" text-anchor="middle" font-size="10" font-weight="600" fill="' + c.border + '" font-family="Arial,sans-serif">' + score + '</text>' +
+    '</svg>';
   return ymaps.templateLayoutFactory.createClass(
     '<div style="position:relative;left:-22px;top:-50px">' + svg + '</div>'
   );
+}
+
+function filterByMarkerClick(l) {
+  // Переключаем на вкладку объявлений
+  switchTab('listings');
+  // Снимаем все фильтры — показываем все
+  currentFilter = 'all';
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('.filter-btn').classList.add('active');
+  // Рендерим список
+  renderListings();
+  // Скроллим к нужной карточке
+  setTimeout(function(){
+    var el = document.getElementById('card-' + l.id);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  }, 100);
+  // Открываем карточку
+  openDetail(l.id);
 }
 
 function renderMarkers(){
@@ -433,7 +454,10 @@ function renderMarkers(){
       iconLayout: getListingIcon(l),
       iconShape:{type:'Circle',coordinates:[22,20],radius:18}
     });
-    pm.events.add('click',()=>openDetail(l.id));
+    pm.events.add('click',function(){
+      // Фильтруем список по этому объявлению и открываем карточку
+      filterByMarkerClick(l);
+    });
     if(layerVisible.listings)myMap.geoObjects.add(pm);
     listingMarkers[l.id]=pm;
   });
