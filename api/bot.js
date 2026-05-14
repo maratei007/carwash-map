@@ -2,7 +2,8 @@ const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_KEY;
-const MAP_URL = process.env.MAP_URL || 'https://carwash-map.vercel.app';
+const MAP_URL = process.env.MAP_URL || "https://carwash-map.vercel.app";
+const VERSION = "v2.3-arraybuffer";
 const TELEGRAM_API = 'https://api.telegram.org/bot' + TELEGRAM_TOKEN;
 
 async function sendMessage(chatId, text) {
@@ -158,7 +159,9 @@ module.exports = async function handler(req, res) {
     const text = (msg.text || '').trim();
     const name = [(msg.from && msg.from.first_name) || '', (msg.from && msg.from.last_name) || ''].filter(Boolean).join(' ') || 'User';
 
-    if (text === '/start') { await sendMessage(chatId, 'Hello ' + name + '!\n\n' + HELP); return res.status(200).end(); }
+    if (text === '/start') { await sendMessage(chatId, "Hello " + name + "! [" + VERSION + "]
+
+" + HELP); return res.status(200).end(); }
     if (text === '/help') { await sendMessage(chatId, HELP); return res.status(200).end(); }
 
     const urlMatch = text.match(/https?:\/\/[^\s]+/);
