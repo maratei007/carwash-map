@@ -10,6 +10,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f0eb;overflow:hidden;height:100vh}
 
+/* Login */
 #login-screen{position:fixed;inset:0;background:#f0f0eb;display:flex;align-items:center;justify-content:center;z-index:9999}
 .login-card{background:white;border-radius:16px;padding:32px;width:320px;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
 .login-card h2{font-size:18px;font-weight:600;margin-bottom:6px}
@@ -17,28 +18,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .login-card input{width:100%;padding:10px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;margin-bottom:10px}
 .login-card button{width:100%;padding:10px;background:#2d8a4e;color:white;border:none;border-radius:8px;font-size:14px;font-weight:500;cursor:pointer}
 
-#toolbar{position:fixed;top:0;left:0;right:0;height:52px;background:white;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;gap:6px;padding:0 12px;z-index:2000;overflow-x:auto}
-#toolbar h1{font-size:14px;font-weight:600;color:#222;white-space:nowrap;margin-right:4px}
-.sep{width:1px;height:28px;background:#e0e0e0;flex-shrink:0;margin:0 3px}
-.tool-btn{display:flex;align-items:center;gap:4px;font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid #ddd;background:white;cursor:pointer;color:#333;white-space:nowrap;flex-shrink:0}
+/* Toolbar — minimal */
+#toolbar{position:fixed;top:0;left:0;right:0;height:48px;background:white;border-bottom:1px solid #e0e0e0;display:flex;align-items:center;padding:0 14px;z-index:2000;gap:10px}
+#toolbar h1{font-size:14px;font-weight:600;color:#222;white-space:nowrap}
+#toolbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tool-btn{font-size:12px;padding:5px 12px;border-radius:6px;border:1px solid #ddd;background:white;cursor:pointer;color:#333;white-space:nowrap}
 .tool-btn:hover{background:#f5f5f0}
-.tool-btn.active{font-weight:500;border-color:currentColor}
-.tool-btn.t-green{color:#2d8a4e}.tool-btn.t-green.active{background:#EAF3DE;border-color:#2d8a4e}
-.tool-btn.t-yellow{color:#9a7200}.tool-btn.t-yellow.active{background:#FAEEDA;border-color:#c89b14}
-.tool-btn.t-add{color:#1D6A3A}.tool-btn.t-add.active{background:#d5f0e4;border-color:#1D9E75}
-.tool-btn.t-pointer{color:#555}.tool-btn.t-pointer.active{background:#f0f0f0;border-color:#888}
-#user-badge{margin-left:auto;font-size:12px;color:#888;white-space:nowrap;flex-shrink:0;padding:4px 10px;background:#f5f5f0;border-radius:6px}
+.tool-btn.t-green{color:#2d8a4e;border-color:#2d8a4e;background:#EAF3DE}
+#user-badge{font-size:12px;color:#888;padding:4px 10px;background:#f5f5f0;border-radius:6px;white-space:nowrap}
 
-#map{position:fixed;top:52px;left:0;right:360px;bottom:0}
+/* Map */
+#map{position:fixed;top:48px;left:0;right:360px;bottom:0}
 
-#panel{position:fixed;top:52px;right:0;width:360px;bottom:0;background:white;border-left:1px solid #e0e0e0;display:flex;flex-direction:column;z-index:1500}
+/* Panel */
+#panel{position:fixed;top:48px;right:0;width:360px;bottom:0;background:white;border-left:1px solid #e0e0e0;display:flex;flex-direction:column;z-index:1500}
 #panel-tabs{display:flex;border-bottom:1px solid #eee;flex-shrink:0}
 .ptab{flex:1;padding:9px 4px;font-size:12px;text-align:center;cursor:pointer;color:#888;border-bottom:2px solid transparent}
 .ptab.active{color:#222;border-bottom-color:#2d8a4e;font-weight:500}
 .tab-content{display:none;flex:1;overflow-y:auto;flex-direction:column}
 .tab-content.active{display:flex}
 
-.filter-bar{padding:8px;border-bottom:1px solid #eee;display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0}
+/* Listings */
+.filter-bar{padding:8px;border-bottom:1px solid #eee;display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0}
 .filter-btn{font-size:11px;padding:3px 8px;border-radius:12px;border:1px solid #ddd;background:white;cursor:pointer;color:#555}
 .filter-btn.active{background:#222;color:white;border-color:#222}
 #listings-panel{flex:1;overflow-y:auto}
@@ -50,19 +51,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .score-top{background:#EAF3DE;color:#2d6e1e}
 .score-mid{background:#FAEEDA;color:#7a4800}
 .score-low{background:#f0f0f0;color:#666}
-.score-rej{background:#FCEBEB;color:#a32d2d}
 .lc-title{font-size:13px;font-weight:500;color:#222;flex:1;line-height:1.3}
-.lc-meta{font-size:11px;color:#888;margin-bottom:6px}
+.lc-meta{font-size:11px;color:#888;margin-bottom:5px}
 .lc-reactions{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .react-count{font-size:11px;color:#888;margin-right:2px}
-.status-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;margin-left:auto;white-space:nowrap}
+.status-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:500;margin-left:auto;white-space:nowrap;flex-shrink:0}
 .st-new{background:#f0f0f0;color:#666}
 .st-interested{background:#EAF3DE;color:#2d6e1e}
 .st-viewing{background:#EBF5FB;color:#1a5276}
 .st-rejected{background:#FCEBEB;color:#a32d2d}
 .st-selected{background:#d4f1d4;color:#1a5c1a}
 
-#detail-panel{position:fixed;top:52px;right:360px;width:340px;bottom:0;background:white;border-left:1px solid #e0e0e0;display:none;flex-direction:column;z-index:1600;box-shadow:-4px 0 16px rgba(0,0,0,0.08)}
+/* Detail panel */
+#detail-panel{position:fixed;top:48px;right:360px;width:340px;bottom:0;background:white;border-left:1px solid #e0e0e0;display:none;flex-direction:column;z-index:1600;box-shadow:-4px 0 16px rgba(0,0,0,0.08)}
 #detail-panel.open{display:flex}
 #detail-close{position:absolute;top:12px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#888}
 #detail-content{flex:1;overflow-y:auto;padding:16px}
@@ -92,8 +93,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .modal-card{background:white;border-radius:16px;padding:24px;width:520px;max-height:92vh;overflow-y:auto}
 .modal-card h3{font-size:16px;font-weight:600;margin-bottom:4px}
 .modal-subtitle{font-size:12px;color:#888;margin-bottom:16px}
-
-/* Parse block */
 .parse-block{background:#f9f9f7;border-radius:10px;padding:14px;margin-bottom:16px;border:1px solid #eee}
 .parse-block label{font-size:12px;font-weight:600;color:#555;display:block;margin-bottom:6px}
 .parse-tabs{display:flex;gap:6px;margin-bottom:10px}
@@ -104,10 +103,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #parse-btn{width:100%;padding:8px;background:#2d8a4e;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
 #parse-btn:disabled{background:#aaa;cursor:not-allowed}
 #parse-status{font-size:12px;margin-top:6px;min-height:18px;color:#555}
-
 .divider{display:flex;align-items:center;gap:10px;margin:14px 0;font-size:12px;color:#aaa}
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:#eee}
-
 .form-row{margin-bottom:10px}
 .form-row label{display:block;font-size:12px;color:#666;margin-bottom:3px;font-weight:500}
 .form-row input,.form-row textarea,.form-row select{width:100%;padding:8px 10px;border:1px solid #ddd;border-radius:8px;font-size:13px}
@@ -118,13 +115,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 #modal-cancel{background:white;color:#555}
 #modal-save{background:#2d8a4e;color:white;border-color:#2d8a4e}
 
-#loading-bar{position:fixed;top:52px;left:0;right:360px;height:3px;background:#eee;z-index:3000}
-#loading-progress{height:3px;background:#2d8a4e;width:0;transition:width 0.3s}
-#loading-status{position:fixed;top:60px;left:calc(50% - 180px);background:rgba(255,255,255,0.97);border:1px solid #ddd;border-radius:8px;padding:7px 14px;font-size:12px;color:#555;z-index:3000;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-#status-bar{position:fixed;bottom:0;left:0;right:360px;background:rgba(255,255,255,0.95);border-top:1px solid #eee;padding:6px 14px;font-size:12px;color:#666;z-index:1500;display:none}
-#status-bar.visible{display:block}
-
-#layers-panel{padding:12px;overflow-y:auto}
+/* Layers */
+#layers-panel-content{padding:12px;overflow-y:auto}
 .layer-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #f0f0f0}
 .layer-toggle{width:36px;height:20px;border-radius:10px;border:none;cursor:pointer;position:relative;flex-shrink:0;transition:background 0.2s}
 .layer-toggle.on{background:#2d8a4e}.layer-toggle.off{background:#ddd}
@@ -134,7 +126,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .layer-name{font-size:13px;color:#333;flex:1}
 .layer-count{font-size:11px;color:#aaa}
 
-.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+/* Activity feed */
+#activity-panel{padding:8px;overflow-y:auto;flex:1}
+.activity-item{display:flex;gap:8px;padding:8px;border-radius:8px;margin-bottom:6px;font-size:12px;background:#f9f9f7;border:1px solid #f0f0f0}
+.activity-icon{font-size:16px;flex-shrink:0}
+.activity-body{flex:1;min-width:0}
+.activity-who{font-weight:600;color:#333}
+.activity-what{color:#555;line-height:1.4;margin-top:1px}
+.activity-when{font-size:10px;color:#bbb;margin-top:3px}
+.activity-item.type-add{border-left:3px solid #2d8a4e}
+.activity-item.type-bot{border-left:3px solid #2980b9}
+.activity-item.type-status{border-left:3px solid #d4a017}
+.activity-item.type-comment{border-left:3px solid #888}
+
+/* POI loading */
+#loading-bar{position:fixed;top:48px;left:0;right:360px;height:3px;background:#eee;z-index:3000}
+#loading-progress{height:3px;background:#2d8a4e;width:0;transition:width 0.3s}
+#loading-status{position:fixed;top:56px;left:calc(50% - 180px);background:rgba(255,255,255,0.97);border:1px solid #ddd;border-radius:8px;padding:7px 14px;font-size:12px;color:#555;z-index:3000;display:none;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
+
+.spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
@@ -151,22 +161,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <div id="toolbar">
   <h1>🗺 Карта автомоек</h1>
-  <div class="sep"></div>
-  <button class="tool-btn t-pointer active" id="tool-pointer" onclick="setTool('pointer')">✦ Выбор</button>
-  <div class="sep"></div>
-  <button class="tool-btn t-green" id="tool-zone-green" onclick="setTool('zone-green')">✏ Приор. зона</button>
-  <button class="tool-btn t-yellow" id="tool-zone-yellow" onclick="setTool('zone-yellow')">✏ Перспект. зона</button>
-  <div class="sep"></div>
-  <button class="tool-btn t-add" onclick="openAddModal(null)">+ Объявление</button>
-  <div class="sep"></div>
-  <button class="tool-btn" onclick="reloadPOI()" style="color:#1a5276">↺ POI</button>
-  <div id="user-badge">—</div>
+  <div id="toolbar-right">
+    <a href="https://t.me/carwash_map_moskva_bot" target="_blank" class="tool-btn t-green" style="text-decoration:none;display:flex;align-items:center;gap:5px"><span>🤖</span><span>Добавить объявление</span></a>
+    <button class="tool-btn" onclick="openAddModal()" style="color:#555;font-size:12px">+ вручную</button>
+    <div id="user-badge">—</div>
+  </div>
 </div>
 
 <div id="loading-bar"><div id="loading-progress"></div></div>
 <div id="loading-status"></div>
 <div id="map"></div>
-<div id="status-bar"></div>
 
 <!-- Detail panel -->
 <div id="detail-panel">
@@ -204,7 +208,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div id="panel-tabs">
     <div class="ptab active" onclick="switchTab('listings')">Объявления <span id="listings-count"></span></div>
     <div class="ptab" onclick="switchTab('layers')">Слои</div>
+    <div class="ptab" onclick="switchTab('activity')">История</div>
   </div>
+
+  <!-- Listings tab -->
   <div class="tab-content active" id="tab-listings">
     <div class="filter-bar">
       <button class="filter-btn active" onclick="filterBy('all',this)">Все</button>
@@ -216,17 +223,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div id="listings-panel"></div>
   </div>
+
+  <!-- Layers tab -->
   <div class="tab-content" id="tab-layers">
-    <div id="layers-panel">
-      <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">POI загружается из Яндекс.Карт автоматически.</div>
+    <div id="layers-panel-content">
+      <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">При загрузке включены только объявления и автомойки. Остальные слои — по необходимости.</div>
       <div class="layer-row"><button class="layer-toggle on" id="toggle-listings" onclick="toggleLayer('listings')"></button><div class="layer-dot" style="background:#1D9E75"></div><span class="layer-name">📍 Объявления</span><span class="layer-count" id="lcount-listings">—</span></div>
       <div class="layer-row"><button class="layer-toggle on" id="toggle-carwash" onclick="toggleLayer('carwash')"></button><div class="layer-dot" style="background:#e24b4a"></div><span class="layer-name">⛔ Автомойки</span><span class="layer-count" id="lcount-carwash">—</span></div>
-      <div class="layer-row"><button class="layer-toggle on" id="toggle-gas" onclick="toggleLayer('gas')"></button><div class="layer-dot" style="background:#e67e22"></div><span class="layer-name">⛽ АЗС</span><span class="layer-count" id="lcount-gas">—</span></div>
-      <div class="layer-row"><button class="layer-toggle on" id="toggle-sto" onclick="toggleLayer('sto')"></button><div class="layer-dot" style="background:#2980b9"></div><span class="layer-name">🔧 СТО</span><span class="layer-count" id="lcount-sto">—</span></div>
-      <div class="layer-row"><button class="layer-toggle on" id="toggle-tire" onclick="toggleLayer('tire')"></button><div class="layer-dot" style="background:#8e44ad"></div><span class="layer-name">🔩 Шиномонтаж</span><span class="layer-count" id="lcount-tire">—</span></div>
-      <div class="layer-row"><button class="layer-toggle on" id="toggle-mall" onclick="toggleLayer('mall')"></button><div class="layer-dot" style="background:#16a085"></div><span class="layer-name">🏬 ТЦ</span><span class="layer-count" id="lcount-mall">—</span></div>
-      <div class="layer-row"><button class="layer-toggle on" id="toggle-zones" onclick="toggleLayer('zones')"></button><div class="layer-dot" style="background:#2d8a4e"></div><span class="layer-name">📐 Зоны</span></div>
+      <div class="layer-row"><button class="layer-toggle off" id="toggle-gas" onclick="toggleLayer('gas')"></button><div class="layer-dot" style="background:#e67e22"></div><span class="layer-name">⛽ АЗС</span><span class="layer-count" id="lcount-gas">—</span></div>
+      <div class="layer-row"><button class="layer-toggle off" id="toggle-sto" onclick="toggleLayer('sto')"></button><div class="layer-dot" style="background:#2980b9"></div><span class="layer-name">🔧 СТО</span><span class="layer-count" id="lcount-sto">—</span></div>
+      <div class="layer-row"><button class="layer-toggle off" id="toggle-tire" onclick="toggleLayer('tire')"></button><div class="layer-dot" style="background:#8e44ad"></div><span class="layer-name">🔩 Шиномонтаж</span><span class="layer-count" id="lcount-tire">—</span></div>
+      <div class="layer-row"><button class="layer-toggle off" id="toggle-mall" onclick="toggleLayer('mall')"></button><div class="layer-dot" style="background:#16a085"></div><span class="layer-name">🏬 ТЦ</span><span class="layer-count" id="lcount-mall">—</span></div>
     </div>
+  </div>
+
+  <!-- Activity tab -->
+  <div class="tab-content" id="tab-activity">
+    <div id="activity-panel"><div style="font-size:12px;color:#bbb;padding:16px">Загрузка...</div></div>
   </div>
 </div>
 
@@ -235,45 +248,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="modal-card">
     <h3>+ Добавить объявление</h3>
     <p class="modal-subtitle">Вставь текст или ссылку — Claude заполнит форму автоматически</p>
-
     <div class="parse-block">
       <div class="parse-tabs">
-        <button class="parse-tab active" onclick="switchParseTab('text',this)">📋 Вставить текст страницы</button>
-        <button class="parse-tab" onclick="switchParseTab('url',this)">🔗 Только ссылка</button>
+        <button class="parse-tab active" onclick="switchParseTab('text',this)">📋 Текст страницы</button>
+        <button class="parse-tab" onclick="switchParseTab('url',this)">🔗 Ссылка</button>
       </div>
-
       <div id="parse-text-block">
-        <label>Открой объявление → выдели всё (Cmd+A) → скопируй (Cmd+C) → вставь сюда:</label>
-        <textarea id="parse-text-input" placeholder="Вставь сюда текст страницы объявления..."></textarea>
+        <label>Открой объявление → Cmd+A → Cmd+C → вставь сюда:</label>
+        <textarea id="parse-text-input" placeholder="Вставь текст объявления..."></textarea>
       </div>
       <div id="parse-url-block" style="display:none">
-        <label>Ссылка на объявление (Авито или Циан):</label>
+        <label>Ссылка на объявление:</label>
         <input type="url" id="parse-url-input" placeholder="https://www.avito.ru/...">
-        <div style="font-size:11px;color:#aaa;margin-top:4px">Работает только если страница публично доступна без авторизации</div>
       </div>
-
-      <button id="parse-btn" onclick="parseWithClaude()">
-        <span id="parse-btn-text">✨ Заполнить через Claude AI</span>
-      </button>
+      <button id="parse-btn" onclick="parseWithClaude()"><span id="parse-btn-text">✨ Заполнить через Claude AI</span></button>
       <div id="parse-status"></div>
     </div>
-
     <div class="divider">или заполни вручную</div>
-
     <div class="form-row"><label>Адрес *</label><input type="text" id="f-address" placeholder="Москва, ул. Пример, 1"></div>
     <div class="form-row"><label>Заголовок *</label><input type="text" id="f-title" placeholder="Автомойка 4 поста, 500 м²"></div>
-    <div class="form-row"><label>Ссылка на объявление</label><input type="url" id="f-url" placeholder="https://avito.ru/..."></div>
+    <div class="form-row"><label>Ссылка</label><input type="url" id="f-url" placeholder="https://avito.ru/..."></div>
     <div class="form-row-2">
-      <div class="form-row" style="margin:0"><label>Площадь (м²)</label><input type="number" id="f-area" placeholder="500"></div>
-      <div class="form-row" style="margin:0"><label>Постов</label><input type="number" id="f-posts" placeholder="4"></div>
+      <div class="form-row" style="margin:0"><label>Площадь (м²)</label><input type="number" id="f-area"></div>
+      <div class="form-row" style="margin:0"><label>Постов</label><input type="number" id="f-posts"></div>
     </div>
     <div class="form-row-2">
-      <div class="form-row" style="margin:0"><label>Аренда (₽/мес)</label><input type="number" id="f-rent" placeholder="500000"></div>
-      <div class="form-row" style="margin:0"><label>Срок аренды (лет)</label><input type="number" id="f-lease" placeholder="5"></div>
+      <div class="form-row" style="margin:0"><label>Аренда (₽/мес)</label><input type="number" id="f-rent"></div>
+      <div class="form-row" style="margin:0"><label>Срок (лет)</label><input type="number" id="f-lease"></div>
     </div>
     <div class="form-row-2">
-      <div class="form-row" style="margin:0"><label>Район</label><input type="text" id="f-district" placeholder="СВАО"></div>
-      <div class="form-row" style="margin:0"><label>Метро</label><input type="text" id="f-metro" placeholder="Бибирево"></div>
+      <div class="form-row" style="margin:0"><label>Район</label><input type="text" id="f-district"></div>
+      <div class="form-row" style="margin:0"><label>Метро</label><input type="text" id="f-metro"></div>
     </div>
     <div class="form-row-2">
       <div class="form-row" style="margin:0"><label>Источник</label>
@@ -283,16 +288,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <select id="f-equip"><option value="">Неизвестно</option><option value="true">Есть</option><option value="false">Нет</option></select>
       </div>
     </div>
-    <div class="form-row-2">
-      <div class="form-row" style="margin:0"><label>Доступ 24/7</label>
-        <select id="f-247"><option value="">Неизвестно</option><option value="true">Да</option><option value="false">Нет</option></select>
-      </div>
-      <div class="form-row" style="margin:0"><label>Парковка</label>
-        <select id="f-parking"><option value="">Неизвестно</option><option value="true">Есть</option><option value="false">Нет</option></select>
-      </div>
-    </div>
-    <div class="form-row"><label>Комментарий</label><textarea id="f-comment" placeholder="Важные детали об объекте..."></textarea></div>
-    <div id="f-coords-info" style="font-size:11px;color:#888;margin-bottom:8px">📍 Координаты определятся по адресу автоматически</div>
+    <div class="form-row"><label>Комментарий</label><textarea id="f-comment"></textarea></div>
     <div class="modal-actions">
       <button id="modal-cancel" onclick="closeAddModal()">Отмена</button>
       <button id="modal-save" onclick="saveListing()">Сохранить на карте</button>
@@ -303,16 +299,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const SUPABASE_URL='https://gdhzqwvctqxjxygxnpzf.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkaHpxd3ZjdHF4anh5Z3hucHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzU0OTcsImV4cCI6MjA5NDE1MTQ5N30.uxKjRz0WbxntZyOSZN7Awmdtwh-JfVnw96SLfzJD4eo';
-
-
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-let currentUser=null,myMap=null,allListings=[],listingMarkers={},currentFilter='all',currentDetailId=null,currentDetailReactions=[];
-let poiLayers={carwash:[],gas:[],sto:[],tire:[],mall:[]},zoneObjects=[],layerVisible={listings:true,carwash:true,gas:true,sto:true,tire:true,mall:true,zones:true};
-let currentTool='pointer',drawingActive=false,drawingPoints=[],drawingPolyline=null,drawingType=null;
-let totalSearches=0,doneSearches=0,foundCoords={};
-let pendingCoords=null,parseMode='text';
 
-// LOGIN
+let currentUser=null,myMap=null,allListings=[],listingMarkers={},currentFilter='all',currentDetailId=null,currentDetailReactions=[];
+let poiLayers={carwash:[],gas:[],sto:[],tire:[],mall:[]};
+let parseMode='text';
+let totalSearches=0,doneSearches=0,foundCoords={};
+
+// Default layer visibility — только объявления и автомойки включены
+let layerVisible={listings:true,carwash:true,gas:false,sto:false,tire:false,mall:false};
+
+// ---- LOGIN ----
 function doLogin(){
   const name=document.getElementById('login-name').value.trim();
   if(!name)return;
@@ -325,135 +322,33 @@ function doLogin(){
 
 window.addEventListener('load',function(){
   const saved=localStorage.getItem('carwash_user');
-  if(saved){currentUser=saved;document.getElementById('login-screen').style.display='none';document.getElementById('user-badge').textContent='👤 '+saved;}
+  if(saved){
+    currentUser=saved;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('user-badge').textContent='👤 '+saved;
+    ymaps.ready(initMap);
+  }
   document.getElementById('login-name').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
-  if(saved)ymaps.ready(initMap);
 });
 
 function initApp(){ymaps.ready(initMap);}
 
 function initMap(){
   myMap=new ymaps.Map('map',{center:[55.75,37.62],zoom:11,controls:['zoomControl','fullscreenControl','typeSelector','rulerControl']});
-  myMap.events.add('click',onMapClick);
-  document.addEventListener('keydown',function(e){if(e.key==='Escape'){cancelDrawing();closeDetail();}});
-  loadListings();loadAllPOI();subscribeRealtime();
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail();});
+  loadListings();
+  loadActivity();
+  loadAllPOI();
+  subscribeRealtime();
 }
 
-// PARSE TAB
-function switchParseTab(mode,btn){
-  parseMode=mode;
-  document.querySelectorAll('.parse-tab').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('parse-text-block').style.display=mode==='text'?'block':'none';
-  document.getElementById('parse-url-block').style.display=mode==='url'?'block':'none';
-}
-
-// CLAUDE PARSE
-async function parseWithClaude(){
-  const btn=document.getElementById('parse-btn');
-  const btnText=document.getElementById('parse-btn-text');
-  const status=document.getElementById('parse-status');
-
-  let content='';
-  let sourceUrl='';
-
-  if(parseMode==='text'){
-    content=document.getElementById('parse-text-input').value.trim();
-    if(!content){status.textContent='⚠️ Вставь текст страницы объявления';return;}
-    // Пробуем найти URL в тексте
-    const urlMatch=content.match(/https?:\/\/(?:www\.)?(?:avito|cian)\.ru\/[^\s]*/);
-    if(urlMatch)sourceUrl=urlMatch[0];
-  } else {
-    sourceUrl=document.getElementById('parse-url-input').value.trim();
-    if(!sourceUrl){status.textContent='⚠️ Введи ссылку на объявление';return;}
-    content='URL: '+sourceUrl;
-  }
-
-  btn.disabled=true;
-  btnText.innerHTML='<div class="spinner"></div> Claude анализирует...';
-  status.textContent='';
-
-  const prompt=`Ты помогаешь анализировать объявления об аренде помещений под автомойку самообслуживания в Москве.
-
-Вот текст объявления (или URL):
----
-${content.slice(0,6000)}
----
-
-Извлеки данные и верни ТОЛЬКО валидный JSON без markdown, без пояснений:
-{
-  "title": "краткое название объекта",
-  "address": "полный адрес в Москве",
-  "district": "район и округ или null",
-  "metro": "ближайшее метро или null",
-  "area_m2": число или null,
-  "posts": количество постов мойки или null,
-  "rent_month": арендная плата в рублях в месяц (число) или null,
-  "lease_years": срок аренды в годах или null,
-  "has_equipment": true/false/null (есть ли оборудование мойки),
-  "access_247": true/false/null (доступ 24/7),
-  "parking": true/false/null (есть ли парковка),
-  "utilities_included": true/false/null (коммуналка включена),
-  "source": "avito" или "cian" или "manual",
-  "url": "ссылка на объявление или null",
-  "comment": "краткое описание 1-2 предложения — что важного заметил",
-  "red_flags": ["список красных флагов"],
-  "score": число от 0 до 10 (оценка привлекательности для автомойки самообслуживания)
-}
-
-Красные флаги: lease_under_5_years, area_under_200, posts_under_3, no_parking, no_access_247, needs_renovation, industrial_zone, low_ceiling, forbidden_use.
-
-Score: 9-10 готовая мойка 4+ поста в жилом районе, 7-8 хорошее помещение 500+м², 5-6 перспективное, 3-4 требует проверки, 0-2 слабое.`;
-
-  try{
-    const resp=await fetch('/api/parse',{
-      method:'POST',
-      headers:{'Content-Type':'application/json; charset=utf-8'},
-      body:JSON.stringify({content: content.slice(0,6000)})
-    });
-    const parsed=await resp.json();
-    if(!resp.ok){throw new Error(parsed.error||'API error');}
-    fillForm(parsed,sourceUrl);
-    status.textContent='✅ Данные заполнены — проверь и сохрани';
-    status.style.color='#2d8a4e';
-  }catch(e){
-    status.textContent='❌ Ошибка: '+e.message;
-    status.style.color='#a32d2d';
-    console.error(e);
-  }finally{
-    btn.disabled=false;
-    btnText.textContent='✨ Заполнить через Claude AI';
-  }
-}
-
-function fillForm(d,fallbackUrl){
-  if(d.title)document.getElementById('f-title').value=d.title;
-  if(d.address)document.getElementById('f-address').value=d.address;
-  if(d.district)document.getElementById('f-district').value=d.district;
-  if(d.metro)document.getElementById('f-metro').value=d.metro;
-  if(d.area_m2)document.getElementById('f-area').value=d.area_m2;
-  if(d.posts)document.getElementById('f-posts').value=d.posts;
-  if(d.rent_month)document.getElementById('f-rent').value=d.rent_month;
-  if(d.lease_years)document.getElementById('f-lease').value=d.lease_years;
-  if(d.url||fallbackUrl)document.getElementById('f-url').value=d.url||fallbackUrl;
-  if(d.comment)document.getElementById('f-comment').value=d.comment;
-  if(d.source){
-    const sel=document.getElementById('f-source');
-    if(['avito','cian','manual'].includes(d.source))sel.value=d.source;
-  }
-  if(d.has_equipment!==null&&d.has_equipment!==undefined)document.getElementById('f-equip').value=String(d.has_equipment);
-  if(d.access_247!==null&&d.access_247!==undefined)document.getElementById('f-247').value=String(d.access_247);
-  if(d.parking!==null&&d.parking!==undefined)document.getElementById('f-parking').value=String(d.parking);
-  window._parsedScore=d.score||0;
-  window._parsedRedFlags=d.red_flags||[];
-}
-
-// LISTINGS
+// ---- LISTINGS ----
 async function loadListings(){
   const{data,error}=await sb.from('listings').select('*').order('score',{ascending:false});
   if(error){console.error(error);return;}
   allListings=data||[];
-  renderListings();renderMarkers();
+  renderListings();
+  renderMarkers();
 }
 
 function renderListings(){
@@ -462,14 +357,15 @@ function renderListings(){
   document.getElementById('listings-count').textContent='('+filtered.length+')';
   if(!filtered.length){panel.innerHTML='<div style="padding:20px;font-size:13px;color:#aaa;text-align:center">Нет объявлений</div>';return;}
   panel.innerHTML=filtered.map(l=>{
-    const sc=l.score>=7?'score-top':l.score>=3?'score-mid':l.score>=0?'score-low':'score-rej';
+    const sc=l.score>=7?'score-top':l.score>=3?'score-mid':'score-low';
     const stLabels={new:'Новый',interested:'Интересно',viewing:'Смотрим',rejected:'Не подходит',selected:'Выбран'};
     const rentStr=l.rent_month?Math.round(l.rent_month/1000)+'к ₽/мес':'';
     const areaStr=l.area_m2?l.area_m2+'м²':'';
+    const srcIcon=l.source==='bot'?'🤖 ':l.source==='avito'?'🅰 ':l.source==='cian'?'🅲 ':'';
     return`<div class="listing-card${currentDetailId===l.id?' selected':''}" onclick="openDetail(${l.id})">
       <div class="lc-top">
         <span class="lc-score ${sc}">${l.score>=7?'🟢':l.score>=3?'🟡':'🔘'} ${l.score}</span>
-        <div class="lc-title">${l.address}</div>
+        <div class="lc-title">${srcIcon}${l.address}</div>
         <span class="status-badge st-${l.status}">${stLabels[l.status]||l.status}</span>
       </div>
       <div class="lc-meta">${[areaStr,rentStr,l.district,l.metro].filter(Boolean).join(' · ')}</div>
@@ -479,13 +375,11 @@ function renderListings(){
   filtered.forEach(l=>loadReactionSummary(l.id));
 }
 
-async function loadReactionSummary(listingId){
-  const{data}=await sb.from('reactions').select('reaction').eq('listing_id',listingId);
+async function loadReactionSummary(id){
+  const{data}=await sb.from('reactions').select('reaction').eq('listing_id',id);
   if(!data)return;
-  const el=document.getElementById('reactions-'+listingId);
-  if(!el)return;
-  const counts={};
-  data.forEach(r=>counts[r.reaction]=(counts[r.reaction]||0)+1);
+  const el=document.getElementById('reactions-'+id);if(!el)return;
+  const counts={};data.forEach(r=>counts[r.reaction]=(counts[r.reaction]||0)+1);
   el.innerHTML=Object.entries(counts).map(([r,c])=>`<span class="react-count">${r} ${c}</span>`).join('')||'<span style="font-size:11px;color:#ccc">нет реакций</span>';
 }
 
@@ -496,19 +390,49 @@ function filterBy(status,btn){
   renderListings();
 }
 
+// ---- MARKERS — кастомные иконки для объявлений ----
+function getListingIcon(l) {
+  // Цвет по скорингу
+  const color = l.status==='rejected'?'#aaa':l.score>=7?'#1D9E75':l.score>=3?'#d4a017':'#777';
+  const border = l.status==='rejected'?'#888':l.score>=7?'#157a55':l.score>=3?'#a87800':'#555';
+  // Источник
+  const src = l.source==='bot'?'🤖':l.source==='avito'?'А':l.source==='cian'?'Ц':'📍';
+  // Score badge
+  const score = l.score;
+
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="44" height="52" viewBox="0 0 44 52">
+    <filter id="sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/></filter>
+    <path d="M22 2 C12 2 4 10 4 20 C4 33 22 50 22 50 C22 50 40 33 40 20 C40 10 32 2 22 2Z" fill="${color}" filter="url(#sh)" stroke="${border}" stroke-width="1.5"/>
+    <circle cx="22" cy="20" r="13" fill="white" opacity="0.95"/>
+    <text x="22" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="${color}" font-family="-apple-system,sans-serif">${src}</text>
+    <text x="22" y="28" text-anchor="middle" font-size="10" font-weight="600" fill="${border}" font-family="-apple-system,sans-serif">${score}</text>
+  </svg>`;
+
+  return ymaps.templateLayoutFactory.createClass(
+    '<div style="position:relative;left:-22px;top:-50px">' + svg + '</div>'
+  );
+}
+
 function renderMarkers(){
   Object.values(listingMarkers).forEach(m=>myMap&&myMap.geoObjects.remove(m));
   listingMarkers={};
   allListings.forEach(l=>{
     if(!l.lat||!l.lon)return;
-    const color=l.status==='rejected'?'#ccc':l.score>=7?'#1D9E75':l.score>=3?'#c89b14':'#888';
-    const emoji=l.status==='rejected'?'✖':l.score>=7?'🟢':l.score>=3?'🟡':'🔘';
     const rentStr=l.rent_month?Math.round(l.rent_month/1000)+'к ₽/мес':'цена неизв.';
+    const srcLabel=l.source==='bot'?'🤖 Telegram':l.source==='avito'?'Авито':l.source==='cian'?'Циан':'вручную';
     const pm=new ymaps.Placemark([l.lat,l.lon],{
-      hintContent:emoji+' '+l.address,
-      balloonContentHeader:emoji+' '+l.address,
-      balloonContentBody:`<div style="font-size:12px;line-height:1.7">${l.area_m2?l.area_m2+'м² · ':''} ${rentStr}<br>${l.has_equipment?'✅ с оборудованием':'🔧 без оборудования'}<br><a href="#" onclick="event.preventDefault();openDetail(${l.id})" style="color:#1D9E75">Открыть карточку →</a></div>`
-    },{preset:'islands#circleIcon',iconColor:color});
+      hintContent:(l.score>=7?'🟢':l.score>=3?'🟡':'🔘')+' '+l.address,
+      balloonContentHeader:l.address,
+      balloonContentBody:`<div style="font-size:12px;line-height:1.8">
+        ${l.area_m2?'📐 '+l.area_m2+'м²<br>':''}💰 ${rentStr}<br>
+        ${l.has_equipment?'✅ с оборудованием':'🔧 без оборудования'}<br>
+        📌 ${srcLabel}<br>
+        <a href="#" onclick="event.preventDefault();openDetail(${l.id})" style="color:#1D9E75">Открыть карточку →</a>
+      </div>`
+    },{
+      iconLayout: getListingIcon(l),
+      iconShape:{type:'Circle',coordinates:[22,20],radius:18}
+    });
     pm.events.add('click',()=>openDetail(l.id));
     if(layerVisible.listings)myMap.geoObjects.add(pm);
     listingMarkers[l.id]=pm;
@@ -516,14 +440,15 @@ function renderMarkers(){
   document.getElementById('lcount-listings').textContent=Object.keys(listingMarkers).length;
 }
 
-// DETAIL
+// ---- DETAIL ----
 async function openDetail(id){
   currentDetailId=id;
   const l=allListings.find(x=>x.id===id);
   if(!l)return;
   document.getElementById('detail-panel').classList.add('open');
   document.getElementById('detail-title').textContent=l.address;
-  document.getElementById('detail-meta').textContent=[l.district,l.metro,l.source].filter(Boolean).join(' · ');
+  const srcLabel=l.source==='bot'?'🤖 добавлено через бот':l.source==='avito'?'Авито':l.source==='cian'?'Циан':'добавлено вручную';
+  document.getElementById('detail-meta').textContent=[l.district,l.metro,srcLabel].filter(Boolean).join(' · ');
   const fields=[
     l.area_m2?'📐 Площадь: '+l.area_m2+' м²':'',
     l.posts?'🚿 Постов: '+l.posts:'',
@@ -550,14 +475,19 @@ function closeDetail(){document.getElementById('detail-panel').classList.remove(
 
 async function updateStatus(status){
   if(!currentDetailId)return;
-  await sb.from('listings').update({status}).eq('id',currentDetailId);
   const l=allListings.find(x=>x.id===currentDetailId);
+  const oldStatus=l?l.status:'new';
+  await sb.from('listings').update({status}).eq('id',currentDetailId);
   if(l)l.status=status;
+  // Log activity
+  await logActivity('status',currentUser,`изменил статус "${l?.address||''}" на "${statusLabel(status)}"`,currentDetailId);
   renderListings();renderMarkers();
 }
 
-async function loadDetailReactions(listingId){
-  const{data}=await sb.from('reactions').select('*').eq('listing_id',listingId);
+function statusLabel(s){return{new:'Новый',interested:'Интересно',viewing:'Смотрим',rejected:'Не подходит',selected:'Выбран'}[s]||s;}
+
+async function loadDetailReactions(id){
+  const{data}=await sb.from('reactions').select('*').eq('listing_id',id);
   currentDetailReactions=data||[];renderDetailReactions();
 }
 
@@ -583,62 +513,139 @@ async function toggleReaction(emoji){
   renderDetailReactions();loadReactionSummary(currentDetailId);
 }
 
-async function loadComments(listingId){
-  const{data}=await sb.from('comments').select('*').eq('listing_id',listingId).order('created_at');
+async function loadComments(id){
+  const{data}=await sb.from('comments').select('*').eq('listing_id',id).order('created_at');
   const list=document.getElementById('comments-list');
   if(!data||!data.length){list.innerHTML='<div style="font-size:12px;color:#bbb;padding:4px 0">Комментариев пока нет</div>';return;}
   list.innerHTML=data.map(c=>{
     const time=new Date(c.created_at).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
     return`<div class="comment-item"><div class="comment-author">${c.user_name}</div><div class="comment-text">${c.text}</div><div class="comment-time">${time}</div></div>`;
   }).join('');
+  list.scrollTop=list.scrollHeight;
 }
 
 async function submitComment(){
   const text=document.getElementById('comment-input').value.trim();
   if(!text||!currentDetailId||!currentUser)return;
   await sb.from('comments').insert({listing_id:currentDetailId,user_name:currentUser,text});
+  const l=allListings.find(x=>x.id===currentDetailId);
+  await logActivity('comment',currentUser,`прокомментировал "${l?.address||''}"`,currentDetailId);
   document.getElementById('comment-input').value='';
   await loadComments(currentDetailId);
 }
 
-// ADD MODAL
-function openAddModal(coords){
-  pendingCoords=coords;
-  window._parsedScore=0;window._parsedRedFlags=[];
-  document.getElementById('add-modal').classList.add('open');
-  document.getElementById('parse-status').textContent='';
-  if(coords)document.getElementById('f-coords-info').textContent='📍 Координаты: '+coords[0].toFixed(5)+', '+coords[1].toFixed(5);
+// ---- ACTIVITY LOG ----
+async function logActivity(type,who,what,listingId=null){
+  try{
+    await sb.from('activity').insert({type,user_name:who,description:what,listing_id:listingId});
+  }catch(e){console.warn('Activity log error:',e);}
 }
 
+async function loadActivity(){
+  try{
+    const{data}=await sb.from('activity').select('*').order('created_at',{ascending:false}).limit(50);
+    renderActivity(data||[]);
+  }catch(e){
+    document.getElementById('activity-panel').innerHTML='<div style="font-size:12px;color:#bbb;padding:16px">История недоступна — нужно создать таблицу activity в Supabase.</div>';
+  }
+}
+
+function renderActivity(items){
+  const panel=document.getElementById('activity-panel');
+  if(!items.length){panel.innerHTML='<div style="font-size:12px;color:#bbb;padding:16px">История пуста</div>';return;}
+  const icons={add:'📍',bot:'🤖',status:'🔄',comment:'💬',react:'👍'};
+  panel.innerHTML=items.map(a=>{
+    const time=new Date(a.created_at).toLocaleDateString('ru',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    const icon=icons[a.type]||'📌';
+    const clickable=a.listing_id?`style="cursor:pointer" onclick="openDetail(${a.listing_id})"`:'' ;
+    return`<div class="activity-item type-${a.type}" ${clickable}>
+      <div class="activity-icon">${icon}</div>
+      <div class="activity-body">
+        <div class="activity-who">${a.user_name}</div>
+        <div class="activity-what">${a.description}</div>
+        <div class="activity-when">${time}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ---- ADD LISTING ----
+function openAddModal(){document.getElementById('add-modal').classList.add('open');}
 function closeAddModal(){
   document.getElementById('add-modal').classList.remove('open');
-  ['f-address','f-title','f-url','f-area','f-posts','f-rent','f-lease','f-district','f-metro','f-comment','parse-text-input','parse-url-input'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.value='';
-  });
+  ['f-address','f-title','f-url','f-area','f-posts','f-rent','f-lease','f-district','f-metro','f-comment','parse-text-input','parse-url-input'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('parse-status').textContent='';
-  document.getElementById('f-coords-info').textContent='📍 Координаты определятся по адресу автоматически';
-  pendingCoords=null;window._parsedScore=0;window._parsedRedFlags=[];
+}
+
+function switchParseTab(mode,btn){
+  parseMode=mode;
+  document.querySelectorAll('.parse-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('parse-text-block').style.display=mode==='text'?'block':'none';
+  document.getElementById('parse-url-block').style.display=mode==='url'?'block':'none';
+}
+
+async function parseWithClaude(){
+  const btn=document.getElementById('parse-btn');
+  const btnText=document.getElementById('parse-btn-text');
+  const status=document.getElementById('parse-status');
+  let content='';
+  let sourceUrl='';
+  if(parseMode==='text'){
+    content=document.getElementById('parse-text-input').value.trim();
+    if(!content){status.textContent='Вставь текст страницы';return;}
+    const urlMatch=content.match(/https?:\/\/(?:www\.)?(?:avito|cian)\.ru\/[^\s]*/);
+    if(urlMatch)sourceUrl=urlMatch[0];
+  }else{
+    sourceUrl=document.getElementById('parse-url-input').value.trim();
+    if(!sourceUrl){status.textContent='Введи ссылку';return;}
+    content='URL: '+sourceUrl;
+  }
+  btn.disabled=true;
+  btnText.innerHTML='<div class="spinner"></div> Анализирую...';
+  status.textContent='';
+  try{
+    const resp=await fetch('/api/parse',{method:'POST',headers:{'Content-Type':'application/json; charset=utf-8'},body:JSON.stringify({content:content.slice(0,6000)})});
+    const parsed=await resp.json();
+    if(!resp.ok)throw new Error(parsed.error||'API error');
+    fillForm(parsed,sourceUrl);
+    status.textContent='✅ Заполнено — проверь и сохрани';
+    status.style.color='#2d8a4e';
+  }catch(e){
+    status.textContent='❌ '+e.message;
+    status.style.color='#a32d2d';
+  }finally{
+    btn.disabled=false;btnText.textContent='✨ Заполнить через Claude AI';
+  }
+}
+
+function fillForm(d,fallbackUrl){
+  if(d.title)document.getElementById('f-title').value=d.title;
+  if(d.address)document.getElementById('f-address').value=d.address;
+  if(d.district)document.getElementById('f-district').value=d.district;
+  if(d.metro)document.getElementById('f-metro').value=d.metro;
+  if(d.area_m2)document.getElementById('f-area').value=d.area_m2;
+  if(d.posts)document.getElementById('f-posts').value=d.posts;
+  if(d.rent_month)document.getElementById('f-rent').value=d.rent_month;
+  if(d.lease_years)document.getElementById('f-lease').value=d.lease_years;
+  if(d.url||fallbackUrl)document.getElementById('f-url').value=d.url||fallbackUrl;
+  if(d.comment)document.getElementById('f-comment').value=d.comment;
+  if(d.source&&['avito','cian','manual'].includes(d.source))document.getElementById('f-source').value=d.source;
+  if(d.has_equipment!==null&&d.has_equipment!==undefined)document.getElementById('f-equip').value=String(d.has_equipment);
+  window._parsedScore=d.score||0;window._parsedRedFlags=d.red_flags||[];
 }
 
 async function saveListing(){
   const address=document.getElementById('f-address').value.trim();
   const title=document.getElementById('f-title').value.trim();
   if(!address||!title){alert('Заполни адрес и заголовок');return;}
-
   let lat=null,lon=null;
-  if(pendingCoords){lat=pendingCoords[0];lon=pendingCoords[1];}
-  else{
-    try{
-      const geo=await ymaps.geocode('Москва, '+address,{results:1});
-      const obj=geo.geoObjects.get(0);
-      if(obj){const c=obj.geometry.getCoordinates();lat=c[0];lon=c[1];}
-    }catch(e){}
-  }
-
+  try{
+    const geo=await ymaps.geocode('Москва, '+address,{results:1});
+    const obj=geo.geoObjects.get(0);
+    if(obj){const c=obj.geometry.getCoordinates();lat=c[0];lon=c[1];}
+  }catch(e){}
   const equip=document.getElementById('f-equip').value;
-  const a247=document.getElementById('f-247').value;
-  const park=document.getElementById('f-parking').value;
-
   const data={
     source:document.getElementById('f-source').value,
     url:document.getElementById('f-url').value||null,
@@ -650,89 +657,44 @@ async function saveListing(){
     rent_month:parseInt(document.getElementById('f-rent').value)||null,
     lease_years:parseInt(document.getElementById('f-lease').value)||null,
     has_equipment:equip===''?null:equip==='true',
-    access_247:a247===''?null:a247==='true',
-    parking:park===''?null:park==='true',
     comment:document.getElementById('f-comment').value||null,
-    score:window._parsedScore||0,
-    red_flags:window._parsedRedFlags||[],
-    status:'new'
+    score:window._parsedScore||0,red_flags:window._parsedRedFlags||[],status:'new'
   };
-
   const{data:saved,error}=await sb.from('listings').insert(data).select().single();
   if(error){alert('Ошибка: '+error.message);return;}
+  await logActivity('add',currentUser,'добавил объявление "'+address+'"',saved.id);
   allListings.unshift(saved);
   renderListings();renderMarkers();
   closeAddModal();
   openDetail(saved.id);
 }
 
-// REALTIME
+// ---- REALTIME ----
 function subscribeRealtime(){
-  sb.channel('listings-changes')
-    .on('postgres_changes',{event:'*',schema:'public',table:'listings'},()=>loadListings())
+  sb.channel('all-changes')
+    .on('postgres_changes',{event:'*',schema:'public',table:'listings'},()=>{loadListings();loadActivity();})
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'activity'},()=>loadActivity())
     .on('postgres_changes',{event:'*',schema:'public',table:'comments'},(payload)=>{
       if(currentDetailId&&payload.new&&payload.new.listing_id===currentDetailId)loadComments(currentDetailId);
     })
     .subscribe();
 }
 
-// MAP TOOLS
-function setTool(tool){
-  cancelDrawing();currentTool=tool;
-  document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active'));
-  const btn=document.getElementById('tool-'+tool);
-  if(btn)btn.classList.add('active');
-  const hints={'pointer':'','zone-green':'Кликайте по точкам контура. Двойной клик — завершить. Esc — отмена.','zone-yellow':'Кликайте по точкам контура. Двойной клик — завершить. Esc — отмена.'};
-  if(hints[tool])showStatus(hints[tool]);else hideStatus();
-  myMap.getContainer().style.cursor=tool==='pointer'?'':'crosshair';
-}
-
-function onMapClick(e){
-  if(currentTool==='pointer')return;
-  const coords=e.get('coords');
-  if(currentTool==='zone-green'||currentTool==='zone-yellow')handlePolygonClick(coords);
-}
-
-function handlePolygonClick(coords){
-  if(!drawingActive){
-    drawingActive=true;drawingType=currentTool;drawingPoints=[coords];
-    const color=currentTool==='zone-green'?'#2d8a4e':'#d4a017';
-    drawingPolyline=new ymaps.Polyline([coords,coords],{},{strokeColor:color,strokeWidth:2,strokeStyle:'dash'});
-    myMap.geoObjects.add(drawingPolyline);
-    myMap.events.add('mousemove',onMouseMove);myMap.events.add('dblclick',onDblClick);
-    showStatus('Точек: 1. Двойной клик — завершить.');
-  }else{
-    drawingPoints.push(coords);
-    drawingPolyline.geometry.set(drawingPoints.concat([drawingPoints[0]]));
-    showStatus('Точек: '+drawingPoints.length+'. Двойной клик — завершить.');
-  }
-}
-
-function onMouseMove(e){if(!drawingActive)return;drawingPolyline.geometry.set(drawingPoints.concat([e.get('coords'),drawingPoints[0]]));}
-function onDblClick(e){e.preventDefault();if(drawingPoints.length<3)return;finishPolygon();}
-
-function finishPolygon(){
-  myMap.events.remove('mousemove',onMouseMove);myMap.events.remove('dblclick',onDblClick);
-  if(drawingPolyline){myMap.geoObjects.remove(drawingPolyline);drawingPolyline=null;}
-  const color=drawingType==='zone-green'?'#2d8a4e':'#d4a017';
-  const name=prompt('Название зоны:')||(drawingType==='zone-green'?'Приоритетная зона':'Перспективная зона');
-  const poly=new ymaps.Polygon([drawingPoints],{hintContent:name,balloonContentHeader:name},{fillColor:color,fillOpacity:0.2,strokeColor:color,strokeWidth:2});
-  if(layerVisible.zones)myMap.geoObjects.add(poly);
-  zoneObjects.push(poly);
-  drawingActive=false;drawingPoints=[];drawingType=null;
-  setTool('pointer');
-}
-
-function cancelDrawing(){
-  if(!drawingActive)return;
-  myMap.events.remove('mousemove',onMouseMove);myMap.events.remove('dblclick',onDblClick);
-  if(drawingPolyline){myMap.geoObjects.remove(drawingPolyline);drawingPolyline=null;}
-  drawingActive=false;drawingPoints=[];drawingType=null;
-}
-
-// POI
-const LAYER_CFG={carwash:{color:'#e24b4a',preset:'islands#redCircleIcon'},gas:{color:'#e67e22',preset:'islands#orangeCircleIcon'},sto:{color:'#2980b9',preset:'islands#blueCircleIcon'},tire:{color:'#8e44ad',preset:'islands#violetCircleIcon'},mall:{color:'#16a085',preset:'islands#darkGreenCircleIcon'}};
-const SEARCH_QUERIES={carwash:['автомойка самообслуживания Москва','мойка самообслуживания Москва'],gas:['АЗС Москва','заправка Лукойл Москва','заправка Газпром Москва'],sto:['автосервис Москва'],tire:['шиномонтаж Москва'],mall:['торговый центр Москва']};
+// ---- POI ----
+const LAYER_CFG={
+  carwash:{color:'#e24b4a',preset:'islands#redCircleIcon'},
+  gas:{color:'#e67e22',preset:'islands#orangeCircleIcon'},
+  sto:{color:'#2980b9',preset:'islands#blueCircleIcon'},
+  tire:{color:'#8e44ad',preset:'islands#violetCircleIcon'},
+  mall:{color:'#16a085',preset:'islands#darkGreenCircleIcon'}
+};
+const SEARCH_QUERIES={
+  carwash:['автомойка самообслуживания Москва','мойка самообслуживания Москва'],
+  gas:['АЗС Москва','заправка Лукойл Москва'],
+  sto:['автосервис Москва'],
+  tire:['шиномонтаж Москва'],
+  mall:['торговый центр Москва']
+};
 const SECTORS=[[55.75,37.37],[55.75,37.62],[55.75,37.87],[55.87,37.37],[55.87,37.62],[55.87,37.87],[55.63,37.37],[55.63,37.62],[55.63,37.87],[55.70,37.50],[55.70,37.75],[55.80,37.50],[55.80,37.75]];
 
 function loadAllPOI(){
@@ -757,38 +719,40 @@ function runSearch(cat,query,center){
       if(foundCoords[key])return;foundCoords[key]=true;
       const name=obj.properties.get('name')||cat;
       const pm=new ymaps.Placemark(coords,{hintContent:name},{preset:LAYER_CFG[cat].preset,iconColor:LAYER_CFG[cat].color});
+      // Добавляем только если слой включён
       if(layerVisible[cat])myMap.geoObjects.add(pm);
       poiLayers[cat].push(pm);
       document.getElementById('lcount-'+cat).textContent=poiLayers[cat].length;
     });
     doneSearches++;
     const pct=Math.round(doneSearches/totalSearches*100);setProgress(pct);
-    showLoadingStatus('POI: '+pct+'% · автомойки: '+poiLayers.carwash.length+' · АЗС: '+poiLayers.gas.length);
-    if(doneSearches>=totalSearches)setTimeout(()=>{hideLoadingStatus();showStatus('POI загружен.');setTimeout(hideStatus,4000);},500);
+    showLoadingStatus('POI: '+pct+'% · автомойки: '+poiLayers.carwash.length);
+    if(doneSearches>=totalSearches)setTimeout(()=>hideLoadingStatus(),1000);
   },()=>{doneSearches++;if(doneSearches>=totalSearches)hideLoadingStatus();});
-}
-
-function reloadPOI(){
-  Object.keys(poiLayers).forEach(cat=>{poiLayers[cat].forEach(pm=>myMap.geoObjects.remove(pm));poiLayers[cat]=[];document.getElementById('lcount-'+cat).textContent='—';});
-  loadAllPOI();
 }
 
 function toggleLayer(cat){
   layerVisible[cat]=!layerVisible[cat];
   const btn=document.getElementById('toggle-'+cat);
   btn.classList.toggle('on',layerVisible[cat]);btn.classList.toggle('off',!layerVisible[cat]);
-  if(cat==='listings'){Object.values(listingMarkers).forEach(m=>{if(layerVisible[cat])myMap.geoObjects.add(m);else myMap.geoObjects.remove(m);});return;}
-  if(cat==='zones'){zoneObjects.forEach(z=>{if(layerVisible[cat])myMap.geoObjects.add(z);else myMap.geoObjects.remove(z);});return;}
-  poiLayers[cat].forEach(pm=>{if(layerVisible[cat])myMap.geoObjects.add(pm);else myMap.geoObjects.remove(pm);});
+  if(cat==='listings'){
+    Object.values(listingMarkers).forEach(m=>{
+      if(layerVisible[cat])myMap.geoObjects.add(m);else myMap.geoObjects.remove(m);
+    });return;
+  }
+  poiLayers[cat].forEach(pm=>{
+    if(layerVisible[cat])myMap.geoObjects.add(pm);else myMap.geoObjects.remove(pm);
+  });
 }
 
+// ---- UI ----
 function switchTab(tab){
-  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['listings','layers'][i]===tab));
+  document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['listings','layers','activity'][i]===tab));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
+  if(tab==='activity')loadActivity();
 }
-function showStatus(msg){const el=document.getElementById('status-bar');el.textContent=msg;el.classList.add('visible');}
-function hideStatus(){document.getElementById('status-bar').classList.remove('visible');}
+
 function showLoadingStatus(msg){const el=document.getElementById('loading-status');el.textContent=msg;el.style.display='block';}
 function hideLoadingStatus(){document.getElementById('loading-status').style.display='none';document.getElementById('loading-bar').style.display='none';}
 function setProgress(pct){document.getElementById('loading-progress').style.width=pct+'%';}
