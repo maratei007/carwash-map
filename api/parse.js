@@ -16,7 +16,7 @@ export default async function handler(req, res) {
     } else {
       try { body = JSON.parse(req.body); } catch(e) { body = {}; }
     }
-    const content = body.content;
+    const content = Buffer.from(body.content, 'base64').toString('utf-8');
     if (!content) return res.status(400).json({ error: 'No content provided' });
 
     const prompt = `Ты помогаешь анализировать объявления об аренде помещений под автомойку самообслуживания в Москве.
