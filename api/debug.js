@@ -1,28 +1,32 @@
 module.exports = async function handler(req, res) {
-  const token = process.env.TELEGRAM_BOT_TOKEN || 'NOT SET';
-  const supabaseUrl = process.env.SUPABASE_URL || 'NOT SET';
-  const supabaseKey = process.env.SUPABASE_KEY || 'NOT SET';
-  const anthropicKey = process.env.ANTHROPIC_API_KEY || 'NOT SET';
-  const mapUrl = process.env.MAP_URL || 'NOT SET';
+  const token = process.env.TELEGRAM_BOT_TOKEN || '';
+  const chatId = req.query.chat_id;
 
-  // Test Telegram token
-  let telegramTest = 'not tested';
+  // Test getMe
+  let getMeResult = {};
   try {
-    const resp = await fetch('https://api.telegram.org/bot' + token + '/getMe');
-    const data = await resp.json();
-    telegramTest = data.ok ? 'OK: @' + data.result.username : 'FAIL: ' + JSON.stringify(data);
-  } catch(e) {
-    telegramTest = 'ERROR: ' + e.message;
+    const r = await fetch('https://api.telegram.org/bot' + token + '/getMe');
+    getMeResult = await r.json();
+  } catch(e) { getMeResult = { error: e.message }; }
+
+  // Test sendMessage if chat_id provided
+  let sendResult = 'provide ?chat_id=YOUR_CHAT_ID to test';
+  if (chatId) {
+    try {
+      const body = JSON.stringify({ chat_id: parseInt(chatId), text: 'Test from debug v1' });
+      const r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: body,
+      });
+      sendResult = await r.json();
+    } catch(e) { sendResult = { error: e.message }; }
   }
 
   return res.status(200).json({
-    env: {
-      TELEGRAM_BOT_TOKEN: token.slice(0,10) + '...' + token.slice(-4) + ' (length: ' + token.length + ')',
-      SUPABASE_URL: supabaseUrl.slice(0,30) + '...',
-      SUPABASE_KEY: supabaseKey.slice(0,20) + '... (length: ' + supabaseKey.length + ')',
-      ANTHROPIC_API_KEY: anthropicKey === 'NOT SET' ? 'NOT SET' : 'SET (length: ' + anthropicKey.length + ')',
-      MAP_URL: mapUrl,
-    },
-    telegram_test: telegramTest,
+    token_length: token.length,
+    token_preview: token.slice(0,15) + '...',
+    getMe: getMeResult,
+    sendMessage: sendResult,
   });
 };
