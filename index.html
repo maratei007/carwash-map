@@ -303,7 +303,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <script>
 const SUPABASE_URL='https://gdhzqwvctqxjxygxnpzf.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdkaHpxd3ZjdHF4anh5Z3hucHpmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzU0OTcsImV4cCI6MjA5NDE1MTQ5N30.uxKjRz0WbxntZyOSZN7Awmdtwh-JfVnw96SLfzJD4eo';
-const CLAUDE_API='https://api.anthropic.com/v1/messages';
+
 
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 let currentUser=null,myMap=null,allListings=[],listingMarkers={},currentFilter='all',currentDetailId=null,currentDetailReactions=[];
@@ -406,19 +406,13 @@ ${content.slice(0,6000)}
 Score: 9-10 готовая мойка 4+ поста в жилом районе, 7-8 хорошее помещение 500+м², 5-6 перспективное, 3-4 требует проверки, 0-2 слабое.`;
 
   try{
-    const resp=await fetch(CLAUDE_API,{
+    const resp=await fetch('/api/parse',{
       method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':'','anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-calls':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({content})
     });
-    const data=await resp.json();
-    if(!resp.ok){throw new Error(data.error?.message||'API error');}
-
-    const text=data.content[0].text.trim();
-    const jsonMatch=text.match(/\{[\s\S]*\}/);
-    if(!jsonMatch)throw new Error('Не удалось распарсить ответ');
-
-    const parsed=JSON.parse(jsonMatch[0]);
+    const parsed=await resp.json();
+    if(!resp.ok){throw new Error(parsed.error||'API error');}
     fillForm(parsed,sourceUrl);
     status.textContent='✅ Данные заполнены — проверь и сохрани';
     status.style.color='#2d8a4e';
