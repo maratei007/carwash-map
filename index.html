@@ -227,7 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="layers-panel-content">
       <div style="font-size:12px;color:#888;margin-bottom:12px;line-height:1.5">При загрузке включены только объявления и автомойки. Остальные слои — по необходимости.</div>
       <div class="layer-row"><button class="layer-toggle on" id="toggle-listings" onclick="toggleLayer('listings')"></button><div class="layer-dot" style="background:#1D9E75"></div><span class="layer-name">📍 Объявления</span><span class="layer-count" id="lcount-listings">—</span></div>
-      <div class="layer-row"><button class="layer-toggle on" id="toggle-carwash" onclick="toggleLayer('carwash')"></button><div class="layer-dot" style="background:#e24b4a"></div><span class="layer-name">⛔ Автомойки</span><span class="layer-count" id="lcount-carwash">—</span></div>
+      <div class="layer-row"><button class="layer-toggle off" id="toggle-carwash" onclick="toggleLayer('carwash')"></button><div class="layer-dot" style="background:#e24b4a"></div><span class="layer-name">⛔ Автомойки</span><span class="layer-count" id="lcount-carwash">—</span></div>
       <div class="layer-row"><button class="layer-toggle off" id="toggle-gas" onclick="toggleLayer('gas')"></button><div class="layer-dot" style="background:#e67e22"></div><span class="layer-name">⛽ АЗС</span><span class="layer-count" id="lcount-gas">—</span></div>
       <div class="layer-row"><button class="layer-toggle off" id="toggle-sto" onclick="toggleLayer('sto')"></button><div class="layer-dot" style="background:#2980b9"></div><span class="layer-name">🔧 СТО</span><span class="layer-count" id="lcount-sto">—</span></div>
       <div class="layer-row"><button class="layer-toggle off" id="toggle-tire" onclick="toggleLayer('tire')"></button><div class="layer-dot" style="background:#8e44ad"></div><span class="layer-name">🔩 Шиномонтаж</span><span class="layer-count" id="lcount-tire">—</span></div>
@@ -305,7 +305,7 @@ let parseMode='text';
 let totalSearches=0,doneSearches=0,foundCoords={};
 
 // Default layer visibility — только объявления и автомойки включены
-let layerVisible={listings:true,carwash:true,gas:false,sto:false,tire:false,mall:false};
+let layerVisible={listings:true,carwash:false,gas:false,sto:false,tire:false,mall:false};
 
 // ---- LOGIN ----
 function doLogin(){
@@ -336,8 +336,8 @@ function initMap(){
   document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDetail();});
   loadListings();
   loadActivity();
-  loadAllPOI();
   subscribeRealtime();
+  // POI загружается только при включении слоя
 }
 
 // ---- LISTINGS ----
@@ -456,7 +456,7 @@ function renderMarkers(){
       hintContent: '#'+num+' '+l.address,
       iconContent: num
     },{
-      preset: 'islands#circleIcon',
+      preset: 'islands#circleStretchyIcon',
       iconColor: color
     });
     pm.events.add('click',function(){ openDetail(l.id); });
@@ -716,69 +716,77 @@ function subscribeRealtime(){
 
 // ---- POI ----
 const LAYER_CFG={
-  carwash:{color:'#e24b4a',preset:'islands#redCircleIcon'},
-  gas:{color:'#e67e22',preset:'islands#orangeCircleIcon'},
-  sto:{color:'#2980b9',preset:'islands#blueCircleIcon'},
-  tire:{color:'#8e44ad',preset:'islands#violetCircleIcon'},
-  mall:{color:'#16a085',preset:'islands#darkGreenCircleIcon'}
-};
-const SEARCH_QUERIES={
-  carwash:['автомойка самообслуживания Москва','мойка самообслуживания Москва'],
-  gas:['АЗС Москва','заправка Лукойл Москва'],
-  sto:['автосервис Москва'],
-  tire:['шиномонтаж Москва'],
-  mall:['торговый центр Москва']
+  carwash:{color:'#e24b4a',preset:'islands#redCircleIcon',queries:['автомойка самообслуживания Москва','мойка самообслуживания Москва'],sectors:true},
+  gas:{color:'#e67e22',preset:'islands#orangeCircleIcon',queries:['АЗС Москва','заправка Лукойл Москва'],sectors:false},
+  sto:{color:'#2980b9',preset:'islands#blueCircleIcon',queries:['автосервис Москва'],sectors:false},
+  tire:{color:'#8e44ad',preset:'islands#violetCircleIcon',queries:['шиномонтаж Москва'],sectors:false},
+  mall:{color:'#16a085',preset:'islands#darkGreenCircleIcon',queries:['торговый центр Москва'],sectors:false}
 };
 const SECTORS=[[55.75,37.37],[55.75,37.62],[55.75,37.87],[55.87,37.37],[55.87,37.62],[55.87,37.87],[55.63,37.37],[55.63,37.62],[55.63,37.87],[55.70,37.50],[55.70,37.75],[55.80,37.50],[55.80,37.75]];
 
-function loadAllPOI(){
-  showLoadingStatus('Загружаем POI...');setProgress(0);
-  const all=[];
-  Object.keys(SEARCH_QUERIES).forEach(cat=>{
-    SEARCH_QUERIES[cat].forEach(q=>{
-      if(cat==='carwash')SECTORS.forEach(c=>all.push({cat,q,center:c}));
-      else all.push({cat,q,center:null});
-    });
+function loadPOILayer(cat){
+  var cfg=LAYER_CFG[cat];
+  if(!cfg)return;
+  var searches=[];
+  cfg.queries.forEach(function(q){
+    if(cfg.sectors){SECTORS.forEach(function(c){searches.push({q:q,center:c});});}
+    else{searches.push({q:q,center:null});}
   });
-  totalSearches=all.length;doneSearches=0;foundCoords={};
-  all.forEach((s,i)=>setTimeout(()=>runSearch(s.cat,s.q,s.center),i*300));
-}
-
-function runSearch(cat,query,center){
-  const opts={results:50,boundedBy:center?[[center[0]-0.12,center[1]-0.18],[center[0]+0.12,center[1]+0.18]]:[[55.49,37.20],[55.97,38.00]]};
-  ymaps.search(query,opts).then(res=>{
-    res.geoObjects.each(obj=>{
-      const coords=obj.geometry.getCoordinates();
-      const key=coords[0].toFixed(4)+','+coords[1].toFixed(4)+':'+cat;
-      if(foundCoords[key])return;foundCoords[key]=true;
-      const name=obj.properties.get('name')||cat;
-      const pm=new ymaps.Placemark(coords,{hintContent:name},{preset:LAYER_CFG[cat].preset,iconColor:LAYER_CFG[cat].color});
-      // Добавляем только если слой включён
-      if(layerVisible[cat])myMap.geoObjects.add(pm);
-      poiLayers[cat].push(pm);
-      document.getElementById('lcount-'+cat).textContent=poiLayers[cat].length;
-    });
-    doneSearches++;
-    const pct=Math.round(doneSearches/totalSearches*100);setProgress(pct);
-    showLoadingStatus('POI: '+pct+'% · автомойки: '+poiLayers.carwash.length);
-    if(doneSearches>=totalSearches)setTimeout(()=>hideLoadingStatus(),1000);
-  },()=>{doneSearches++;if(doneSearches>=totalSearches)hideLoadingStatus();});
+  var done=0,coords={};
+  showLoadingStatus('Загружаем '+cat+'...');setProgress(0);
+  document.getElementById('lcount-'+cat).textContent='...';
+  searches.forEach(function(s,i){
+    setTimeout(function(){
+      var opts={results:50,boundedBy:s.center?[[s.center[0]-0.12,s.center[1]-0.18],[s.center[0]+0.12,s.center[1]+0.18]]:[[55.49,37.20],[55.97,38.00]]};
+      ymaps.search(s.q,opts).then(function(res){
+        res.geoObjects.each(function(obj){
+          var c=obj.geometry.getCoordinates();
+          var key=c[0].toFixed(4)+','+c[1].toFixed(4);
+          if(coords[key])return;
+          coords[key]=true;
+          var name=obj.properties.get('name')||cat;
+          var pm=new ymaps.Placemark(c,{hintContent:name},{preset:cfg.preset,iconColor:cfg.color});
+          myMap.geoObjects.add(pm);
+          poiLayers[cat].push(pm);
+          document.getElementById('lcount-'+cat).textContent=poiLayers[cat].length;
+        });
+        done++;
+        setProgress(Math.round(done/searches.length*100));
+        if(done>=searches.length)setTimeout(function(){hideLoadingStatus();},800);
+      },function(){done++;if(done>=searches.length)hideLoadingStatus();});
+    },i*250);
+  });
 }
 
 function toggleLayer(cat){
   layerVisible[cat]=!layerVisible[cat];
-  const btn=document.getElementById('toggle-'+cat);
-  btn.classList.toggle('on',layerVisible[cat]);btn.classList.toggle('off',!layerVisible[cat]);
+  var btn=document.getElementById('toggle-'+cat);
+  btn.classList.toggle('on',layerVisible[cat]);
+  btn.classList.toggle('off',!layerVisible[cat]);
   if(cat==='listings'){
-    Object.values(listingMarkers).forEach(m=>{
+    Object.values(listingMarkers).forEach(function(m){
       if(layerVisible[cat])myMap.geoObjects.add(m);else myMap.geoObjects.remove(m);
     });return;
   }
-  poiLayers[cat].forEach(pm=>{
-    if(layerVisible[cat])myMap.geoObjects.add(pm);else myMap.geoObjects.remove(pm);
-  });
+  if(cat==='zones'){return;}
+  if(layerVisible[cat]){
+    if(poiLayers[cat].length===0){loadPOILayer(cat);}
+    else{poiLayers[cat].forEach(function(pm){myMap.geoObjects.add(pm);});}
+  } else {
+    poiLayers[cat].forEach(function(pm){myMap.geoObjects.remove(pm);});
+  }
 }
 
+function reloadPOI(){
+  Object.keys(poiLayers).forEach(function(cat){
+    poiLayers[cat].forEach(function(pm){myMap.geoObjects.remove(pm);});
+    poiLayers[cat]=[];
+    document.getElementById('lcount-'+cat).textContent='—';
+    layerVisible[cat]=false;
+    var btn=document.getElementById('toggle-'+cat);
+    if(btn){btn.classList.remove('on');btn.classList.add('off');}
+  });
+}
 // ---- UI ----
 function switchTab(tab){
   document.querySelectorAll('.ptab').forEach((t,i)=>t.classList.toggle('active',['listings','layers','activity'][i]===tab));
