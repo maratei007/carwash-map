@@ -401,18 +401,14 @@ function statusColor(l) {
 
 function getListingIcon(l) {
   var c = statusColor(l);
-  var src = l.source==='bot'?'T':l.source==='avito'?'A':l.source==='cian'?'C':'?';
-  var score = l.score;
   var fid = 'sh' + l.id;
-  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="44" height="52" viewBox="0 0 44 52">' +
-    '<filter id="' + fid + '"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.25)"/></filter>' +
-    '<path d="M22 2 C12 2 4 10 4 20 C4 33 22 50 22 50 C22 50 40 33 40 20 C40 10 32 2 22 2Z" fill="' + c.fill + '" filter="url(#' + fid + ')" stroke="' + c.border + '" stroke-width="1.5"/>' +
-    '<circle cx="22" cy="20" r="13" fill="white" opacity="0.95"/>' +
-    '<text x="22" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="' + c.fill + '" font-family="Arial,sans-serif">' + src + '</text>' +
-    '<text x="22" y="28" text-anchor="middle" font-size="10" font-weight="600" fill="' + c.border + '" font-family="Arial,sans-serif">' + score + '</text>' +
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">' +
+    '<filter id="' + fid + '"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="rgba(0,0,0,0.3)"/></filter>' +
+    '<path d="M16 2 C8 2 2 8 2 16 C2 26 16 40 16 40 C16 40 30 26 30 16 C30 8 24 2 16 2Z" fill="' + c.fill + '" filter="url(#' + fid + ')" stroke="' + c.border + '" stroke-width="1.5"/>' +
+    '<circle cx="16" cy="16" r="7" fill="white" opacity="0.9"/>' +
     '</svg>';
   return ymaps.templateLayoutFactory.createClass(
-    '<div style="position:relative;left:-22px;top:-50px">' + svg + '</div>'
+    '<div style="position:relative;left:-16px;top:-40px;cursor:pointer">' + svg + '</div>'
   );
 }
 
@@ -454,10 +450,7 @@ function renderMarkers(){
       iconLayout: getListingIcon(l),
       iconShape:{type:'Circle',coordinates:[22,20],radius:18}
     });
-    pm.events.add('click',function(){
-      // Фильтруем список по этому объявлению и открываем карточку
-      filterByMarkerClick(l);
-    });
+    pm.events.add('click',function(){ openDetail(l.id); });
     if(layerVisible.listings)myMap.geoObjects.add(pm);
     listingMarkers[l.id]=pm;
   });
@@ -490,7 +483,13 @@ async function openDetail(id){
   else urlEl.style.display='none';
   document.getElementById('detail-status-select').value=l.status||'new';
   if(l.lat&&l.lon&&myMap)myMap.setCenter([l.lat,l.lon],14);
+  // Переключаем на вкладку объявлений и скроллим к карточке
+  switchTab('listings');
   renderListings();
+  setTimeout(function(){
+    var el=document.getElementById('card-'+id);
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+  },150);
   await loadDetailReactions(id);
   await loadComments(id);
 }
