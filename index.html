@@ -345,6 +345,9 @@ async function loadListings(){
   const{data,error}=await sb.from('listings').select('*').order('score',{ascending:false});
   if(error){console.error(error);return;}
   allListings=data||[];
+  // Присваиваем порядковые номера по id (порядку добавления)
+  var sorted=allListings.slice().sort(function(a,b){return a.id-b.id;});
+  sorted.forEach(function(l,i){l._num=i+1;});
   renderListings();
   renderMarkers();
 }
@@ -363,7 +366,7 @@ function renderListings(){
     return`<div id="card-${l.id}" class="listing-card${currentDetailId===l.id?' selected':''}" onclick="openDetail(${l.id})">
       <div class="lc-top">
         <span style="width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px;display:inline-block;background:${l.status==='rejected'?'#e24b4a':l.status==='viewing'?'#2d8a4e':l.status==='selected'?'#1a6035':l.status==='interested'?'#d4a017':'#aaa'}"></span>
-        <div class="lc-title">${srcIcon}${l.address}</div>
+        <div class="lc-title"><span style="color:#aaa;font-size:11px;margin-right:3px">#${l._num||''}</span>${l.address}</div>
         <span class="status-badge st-${l.status}">${stLabels[l.status]||l.status}</span>
       </div>
       <div class="lc-meta">${[areaStr,rentStr,l.district,l.metro].filter(Boolean).join(' · ')}</div>
@@ -428,31 +431,39 @@ function filterByMarkerClick(l) {
   openDetail(l.id);
 }
 
+function statusIconColor(l){
+  if(l.status==='rejected')  return '#e24b4a';
+  if(l.status==='viewing')   return '#2d8a4e';
+  if(l.status==='selected')  return '#1a6035';
+  if(l.status==='interested')return '#d4a017';
+  return '#888888';
+}
+
 function renderMarkers(){
   Object.values(listingMarkers).forEach(m=>myMap&&myMap.geoObjects.remove(m));
   listingMarkers={};
-  allListings.forEach(l=>{
+  // Сортируем по дате добавления чтобы номера были стабильными
+  var sorted = allListings.slice().sort(function(a,b){ return a.id-b.id; });
+  var numMap = {};
+  sorted.forEach(function(l,i){ numMap[l.id]=i+1; });
+
+  allListings.forEach(function(l){
     if(!l.lat||!l.lon)return;
-    const rentStr=l.rent_month?Math.round(l.rent_month/1000)+'к ₽/мес':'цена неизв.';
-    const srcLabel=l.source==='bot'?'🤖 Telegram':l.source==='avito'?'Авито':l.source==='cian'?'Циан':'вручную';
-    const pm=new ymaps.Placemark([l.lat,l.lon],{
-      hintContent:(l.score>=7?'🟢':l.score>=3?'🟡':'🔘')+' '+l.address,
-      balloonContentHeader:l.address,
-      balloonContentBody:`<div style="font-size:12px;line-height:1.8">
-        ${l.area_m2?'📐 '+l.area_m2+'м²<br>':''}💰 ${rentStr}<br>
-        ${l.has_equipment?'✅ с оборудованием':'🔧 без оборудования'}<br>
-        📌 ${srcLabel}<br>
-        <a href="#" onclick="event.preventDefault();openDetail(${l.id})" style="color:#1D9E75">Открыть карточку →</a>
-      </div>`
+    var num = numMap[l.id]||'';
+    var color = statusIconColor(l);
+    var rentStr = l.rent_month?Math.round(l.rent_month/1000)+'к ₽/мес':'цена неизв.';
+    var pm = new ymaps.Placemark([l.lat,l.lon],{
+      hintContent: '#'+num+' '+l.address,
+      iconContent: num
     },{
-      iconLayout: getListingIcon(l),
-      iconShape:{type:'Circle',coordinates:[16,16],radius:14},
-      hasBalloon: false,
-      hasHint: true
+      preset: 'islands#circleIcon',
+      iconColor: color
     });
     pm.events.add('click',function(){ openDetail(l.id); });
     if(layerVisible.listings)myMap.geoObjects.add(pm);
     listingMarkers[l.id]=pm;
+    // Сохраняем номер для списка
+    l._num = num;
   });
   document.getElementById('lcount-listings').textContent=Object.keys(listingMarkers).length;
 }
