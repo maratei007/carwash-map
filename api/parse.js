@@ -1,3 +1,4 @@
+// @ts-check
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -10,44 +11,48 @@ export default async function handler(req, res) {
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
   try {
-    let body = '';
-    if (typeof req.body === 'object' && req.body !== null) {
-      body = req.body;
-    } else {
-      try { body = JSON.parse(req.body); } catch(e) { body = {}; }
+    let body = req.body;
+    if (typeof body === 'string') {
+      try { body = JSON.parse(body); } catch(e) { body = {}; }
     }
-    const content = Buffer.from(body.content, 'base64').toString('utf-8');
-    if (!content) return res.status(400).json({ error: 'No content provided' });
 
-    const prompt = `Ты помогаешь анализировать объявления об аренде помещений под автомойку самообслуживания в Москве.
+    const rawContent = body && body.content ? String(body.content) : '';
+    if (!rawContent) return res.status(400).json({ error: 'No content provided' });
 
-Вот текст объявления:
----
-${content.slice(0, 6000)}
----
+    const content = rawContent.slice(0, 6000);
 
-Извлеки данные и верни ТОЛЬКО валидный JSON без markdown и пояснений:
-{
-  "title": "краткое название объекта",
-  "address": "полный адрес в Москве",
-  "district": "район и округ или null",
-  "metro": "ближайшее метро или null",
-  "area_m2": число или null,
-  "posts": количество постов мойки или null,
-  "rent_month": арендная плата в рублях в месяц (число) или null,
-  "lease_years": срок аренды в годах или null,
-  "has_equipment": true/false/null,
-  "access_247": true/false/null,
-  "parking": true/false/null,
-  "utilities_included": true/false/null,
-  "source": "avito" или "cian" или "manual",
-  "url": "ссылка на объявление или null",
-  "comment": "краткое описание 1-2 предложения",
-  "red_flags": ["список красных флагов из: lease_under_5_years, area_under_200, posts_under_3, no_parking, no_access_247, needs_renovation, industrial_zone, low_ceiling, forbidden_use"],
-  "score": число от 0 до 10
-}
-
-Score: 9-10 готовая мойка 4+ поста в жилом районе, 7-8 хорошее помещение 500+м², 5-6 перспективное, 3-4 под вопросом, 0-2 слабое.`;
+    const prompt = [
+      'You are helping analyze Russian real estate listings for self-service car wash rental in Moscow.',
+      'Extract data from the listing text below and return ONLY valid JSON without markdown or explanations.',
+      '',
+      'Listing text:',
+      '---',
+      content,
+      '---',
+      '',
+      'Return this exact JSON structure (use null for unknown fields):',
+      '{',
+      '  "title": "short object name in Russian",',
+      '  "address": "full Moscow address in Russian",',
+      '  "district": "district and administrative okrug or null",',
+      '  "metro": "nearest metro station or null",',
+      '  "area_m2": number or null,',
+      '  "posts": number of car wash posts or null,',
+      '  "rent_month": monthly rent in rubles as number or null,',
+      '  "lease_years": lease term in years as number or null,',
+      '  "has_equipment": true/false/null,',
+      '  "access_247": true/false/null,',
+      '  "parking": true/false/null,',
+      '  "utilities_included": true/false/null,',
+      '  "source": "avito" or "cian" or "manual",',
+      '  "url": "listing url or null",',
+      '  "comment": "1-2 sentence summary in Russian",',
+      '  "red_flags": ["array of: lease_under_5_years, area_under_200, posts_under_3, no_parking, no_access_247, needs_renovation, industrial_zone, low_ceiling, forbidden_use"],',
+      '  "score": number 0-10',
+      '}',
+      '',
+      'Score guide: 9-10 ready car wash 4+ posts in residential area, 7-8 good space 500+m2, 5-6 promising, 3-4 needs verification, 0-2 weak.'
+    ].join('\n');
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -64,11 +69,13 @@ Score: 9-10 готовая мойка 4+ поста в жилом районе, 
     });
 
     const data = await response.json();
-    if (!response.ok) return res.status(response.status).json({ error: data.error?.message || 'API error' });
+    if (!response.ok) {
+      return res.status(response.status).json({ error: data.error?.message || 'API error' });
+    }
 
     const text = data.content[0].text.trim();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse response' });
+    if (!jsonMatch) return res.status(500).json({ error: 'Failed to parse Claude response' });
 
     return res.status(200).json(JSON.parse(jsonMatch[0]));
   } catch (e) {
