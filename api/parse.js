@@ -10,7 +10,13 @@ export default async function handler(req, res) {
   if (!ANTHROPIC_KEY) return res.status(500).json({ error: 'API key not configured' });
 
   try {
-    const { content } = req.body;
+    let body = '';
+    if (typeof req.body === 'object' && req.body !== null) {
+      body = req.body;
+    } else {
+      try { body = JSON.parse(req.body); } catch(e) { body = {}; }
+    }
+    const content = body.content;
     if (!content) return res.status(400).json({ error: 'No content provided' });
 
     const prompt = `Ты помогаешь анализировать объявления об аренде помещений под автомойку самообслуживания в Москве.
